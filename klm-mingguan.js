@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
 
         paparStatus(
-            "❌ Supabase tidak berjaya disambungkan.",
+            "Supabase tidak berjaya disambungkan.",
             true
         );
 
@@ -53,49 +53,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     // =============================================
-    // 1. DAPATKAN USER LOGIN
+    // LOGIN + KETUA UNIT
     // =============================================
 
-    const berjayaLogin =
+    const berjaya =
         await dapatkanPengguna();
 
-    if (!berjayaLogin) {
+
+    if (!berjaya) {
         return;
     }
 
 
     // =============================================
-    // 2. DAPATKAN PROFIL KETUA UNIT
+    // MUAT ANGGOTA UNIT
     // =============================================
 
-    const berjayaProfil =
-        await dapatkanProfilKetuaUnit();
-
-    if (!berjayaProfil) {
-        return;
-    }
+    await muatAnggota();
 
 
     // =============================================
-    // 3. DAPATKAN ANGGOTA UNIT
-    // =============================================
-
-    const berjayaAnggota =
-        await muatAnggota();
-
-    if (!berjayaAnggota) {
-        return;
-    }
-
-
-    // =============================================
-    // 4. LOAD DATA MINGGU
+    // MUAT DATA MINGGU
     // =============================================
 
     await muatDataMinggu();
 
 });
-
 
 // =====================================================
 // TAHUN
@@ -310,7 +293,7 @@ function pasangEvent() {
 
 
 // =====================================================
-// PENGGUNA
+// PENGGUNA + KETUA UNIT
 // =====================================================
 
 async function dapatkanPengguna() {
@@ -318,65 +301,115 @@ async function dapatkanPengguna() {
     try {
 
         const {
-            data: {
-                user
-            },
-            error
-        } =
-        await db.auth.getUser();
+            data: authData,
+            error: authError
+        } = await db.auth.getUser();
 
-
-        if (error) {
-            throw error;
+        if (authError) {
+            throw authError;
         }
 
+        const user = authData?.user;
 
         if (!user) {
 
-            console.warn(
-                "Tiada pengguna login."
+            console.warn("Tiada pengguna login.");
+
+            window.location.href = "login.html";
+
+            return false;
+        }
+
+        pengguna = user;
+
+        const email =
+            (user.email || "")
+            .trim()
+            .toLowerCase();
+
+        console.log(
+            "AUTH USER:",
+            email
+        );
+
+
+        // =================================================
+        // CARI KETUA UNIT
+        // =================================================
+
+        const {
+            data: ketua,
+            error: ketuaError
+        } = await db
+            .from("pengguna_ketua_unit")
+            .select(`
+                id,
+                user_id,
+                email,
+                nama,
+                unit,
+                role,
+                status
+            `)
+            .ilike("email", email)
+            .eq("status", "Aktif")
+            .eq("role", "ketua_unit")
+            .maybeSingle();
+
+
+        if (ketuaError) {
+            throw ketuaError;
+        }
+
+
+        if (!ketua) {
+
+            paparStatus(
+                "Akaun ini tidak didaftarkan sebagai Ketua Unit.",
+                true
             );
 
-            window.location.href =
-                "login.html";
+            console.error(
+                "KETUA UNIT TIDAK DITEMUI:",
+                email
+            );
 
             return false;
         }
 
 
-        pengguna = user;
+        // =================================================
+        // SIMPAN DATA KETUA UNIT
+        // =================================================
+
+        window.ketuaUnitLogin = ketua;
 
 
-        const nama =
-            user.user_metadata?.nama ||
-            user.user_metadata?.full_name ||
-            user.user_metadata?.name ||
-            "";
+        const namaKetua =
+            ketua.nama || "-";
+
+        const unitKetua =
+            ketua.unit || "-";
 
 
-        const email =
-            user.email || "";
+        console.log(
+            "KETUA UNIT LOGIN:",
+            ketua
+        );
 
 
-        const namaPaparan =
-            nama || email;
-
-
-        // =============================================
-        // PAPAR NAMA
-        // =============================================
+        // =================================================
+        // PAPAR PADA INTERFACE
+        // =================================================
 
         const namaPengguna =
             document.getElementById(
                 "namaPengguna"
             );
 
-
         if (namaPengguna) {
-
             namaPengguna.textContent =
-                namaPaparan;
-
+                namaKetua;
         }
 
 
@@ -385,23 +418,54 @@ async function dapatkanPengguna() {
                 "namaPenggunaSidebar"
             );
 
-
         if (namaSidebar) {
-
             namaSidebar.textContent =
-                namaPaparan;
-
+                namaKetua;
         }
 
 
-        console.log(
-            "PENGGUNA LOGIN:",
-            {
-                id: user.id,
-                email: email,
-                nama: nama
-            }
-        );
+        const paparKetuaUnit =
+            document.getElementById(
+                "paparKetuaUnit"
+            );
+
+        if (paparKetuaUnit) {
+            paparKetuaUnit.textContent =
+                namaKetua;
+        }
+
+
+        const paparUnit =
+            document.getElementById(
+                "paparUnit"
+            );
+
+        if (paparUnit) {
+            paparUnit.textContent =
+                unitKetua;
+        }
+
+
+        const unitPengguna =
+            document.getElementById(
+                "unitPengguna"
+            );
+
+        if (unitPengguna) {
+            unitPengguna.textContent =
+                unitKetua;
+        }
+
+
+        const unitSidebar =
+            document.getElementById(
+                "unitPenggunaSidebar"
+            );
+
+        if (unitSidebar) {
+            unitSidebar.textContent =
+                unitKetua;
+        }
 
 
         return true;
@@ -414,20 +478,16 @@ async function dapatkanPengguna() {
             error
         );
 
-
         paparStatus(
-            "❌ Gagal mendapatkan pengguna: " +
+            "Gagal mendapatkan maklumat Ketua Unit: " +
             error.message,
             true
         );
 
-
         return false;
-
     }
 
 }
-
 
 // =====================================================
 // PROFIL KETUA UNIT
@@ -602,33 +662,31 @@ async function muatAnggota() {
 
     paparLoading(true);
 
-
     try {
 
-        if (!profilKetuaUnit) {
+        const unitKetua =
+            window.ketuaUnitLogin?.unit;
+
+
+        if (!unitKetua) {
 
             throw new Error(
-                "Profil Ketua Unit belum tersedia."
+                "Unit Ketua Unit tidak ditemui."
             );
 
         }
 
 
-        const unit =
-            profilKetuaUnit.unit;
-
-
         console.log(
             "MUAT ANGGOTA UNIT:",
-            unit
+            unitKetua
         );
 
 
         const {
             data,
             error
-        } =
-        await db
+        } = await db
             .from("Data_Anggota")
             .select(`
                 noskb,
@@ -639,26 +697,14 @@ async function muatAnggota() {
                 ketua_unit,
                 status
             `)
-            .eq(
-                "unit",
-                unit
-            )
-            .eq(
-                "status",
-                "Aktif"
-            )
-            .order(
-                "poskhidmat",
-                {
-                    ascending: true
-                }
-            )
-            .order(
-                "nama",
-                {
-                    ascending: true
-                }
-            );
+            .eq("unit", unitKetua)
+            .eq("status", "Aktif")
+            .order("poskhidmat", {
+                ascending: true
+            })
+            .order("nama", {
+                ascending: true
+            });
 
 
         if (error) {
@@ -666,20 +712,21 @@ async function muatAnggota() {
         }
 
 
-        anggota =
-            data || [];
+        anggota = data || [];
 
 
         console.log(
-            "ANGGOTA UNIT:",
+            "UNIT:",
+            unitKetua
+        );
+
+        console.log(
+            "JUMLAH ANGGOTA:",
             anggota.length
         );
 
 
         paparAnggota();
-
-
-        return true;
 
 
     } catch (error) {
@@ -689,16 +736,11 @@ async function muatAnggota() {
             error
         );
 
-
         paparStatus(
-            "❌ Gagal memuatkan anggota: " +
+            "Gagal memuatkan anggota: " +
             error.message,
             true
         );
-
-
-        return false;
-
 
     } finally {
 
