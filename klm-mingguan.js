@@ -595,18 +595,17 @@ async function dapatkanPengguna() {
 
 
 // =====================================================
-// MUAT ANGGOTA
+// MUAT ANGGOTA MENGIKUT UNIT KETUA UNIT
 // =====================================================
 
 async function muatAnggota() {
 
     paparLoading(true);
 
-
     try {
 
         // =============================================
-        // PASTIKAN PROFIL ADA
+        // PASTIKAN PROFIL KETUA UNIT ADA
         // =============================================
 
         if (!profilKetuaUnit) {
@@ -619,13 +618,13 @@ async function muatAnggota() {
 
 
         const unitKetua =
-            profilKetuaUnit.unit;
+            (profilKetuaUnit.unit || "").trim();
 
 
         if (!unitKetua) {
 
             throw new Error(
-                "Unit Ketua Unit tidak ditemui."
+                "Unit Ketua Unit tidak ditetapkan."
             );
 
         }
@@ -636,20 +635,33 @@ async function muatAnggota() {
         );
 
         console.log(
-            "MUAT ANGGOTA UNTUK UNIT:",
+            "MUAT ANGGOTA KETUA UNIT"
+        );
+
+        console.log(
+            "NAMA:",
+            profilKetuaUnit.nama
+        );
+
+        console.log(
+            "EMAIL:",
+            profilKetuaUnit.email
+        );
+
+        console.log(
+            "UNIT:",
             unitKetua
         );
 
 
         // =============================================
-        // QUERY DATA ANGGOTA
+        // AMBIL ANGGOTA UNIT SAHAJA
         // =============================================
 
         const {
             data,
             error
-        } =
-        await db
+        } = await db
             .from("Data_Anggota")
             .select(`
                 noskb,
@@ -657,6 +669,8 @@ async function muatAnggota() {
                 nama,
                 poskhidmat,
                 unit,
+                jawatan,
+                ketua_pos,
                 ketua_unit,
                 status
             `)
@@ -692,13 +706,7 @@ async function muatAnggota() {
 
 
         console.log(
-            "UNIT:",
-            unitKetua
-        );
-
-
-        console.log(
-            "JUMLAH ANGGOTA:",
+            "JUMLAH ANGGOTA UNIT:",
             anggota.length
         );
 
@@ -735,8 +743,6 @@ async function muatAnggota() {
     }
 
 }
-
-
 // =====================================================
 // PAPAR ANGGOTA
 // =====================================================
