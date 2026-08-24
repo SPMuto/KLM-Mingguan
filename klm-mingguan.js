@@ -7,6 +7,7 @@ console.log("=================================");
 console.log("KLM MINGGUAN JS READY");
 console.log("=================================");
 
+
 let db = null;
 
 let pengguna = null;
@@ -53,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     // =============================================
-    // LOGIN + KETUA UNIT
+    // DAPATKAN PENGGUNA + PROFIL KETUA UNIT
     // =============================================
 
     const berjaya =
@@ -79,6 +80,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await muatDataMinggu();
 
 });
+
 
 // =====================================================
 // TAHUN
@@ -143,6 +145,7 @@ function tetapkanBulanSemasa() {
 // =====================================================
 
 function pasangEvent() {
+
 
     // =============================================
     // WEEK TAB
@@ -300,42 +303,66 @@ async function dapatkanPengguna() {
 
     try {
 
+        // =============================================
+        // DAPATKAN SESSION USER
+        // =============================================
+
         const {
             data: authData,
             error: authError
         } = await db.auth.getUser();
 
+
         if (authError) {
             throw authError;
         }
 
-        const user = authData?.user;
+
+        const user =
+            authData?.user;
+
 
         if (!user) {
 
-            console.warn("Tiada pengguna login.");
+            console.warn(
+                "Tiada pengguna login."
+            );
 
-            window.location.href = "login.html";
+            window.location.href =
+                "login.html";
 
             return false;
         }
 
+
         pengguna = user;
+
 
         const email =
             (user.email || "")
             .trim()
             .toLowerCase();
 
+
+        console.log(
+            "================================="
+        );
+
         console.log(
             "AUTH USER:",
             email
         );
 
+        console.log(
+            "USER ID:",
+            user.id
+        );
 
-        // =================================================
-        // CARI KETUA UNIT
-        // =================================================
+
+        // =============================================
+        // CARI PROFIL KETUA UNIT
+        // BERDASARKAN EMAIL LOGIN
+        // =============================================
 
         const {
             data: ketua,
@@ -351,176 +378,9 @@ async function dapatkanPengguna() {
                 role,
                 status
             `)
-            .ilike("email", email)
-            .eq("status", "Aktif")
-            .eq("role", "ketua_unit")
-            .maybeSingle();
-
-
-        if (ketuaError) {
-            throw ketuaError;
-        }
-
-
-        if (!ketua) {
-
-            paparStatus(
-                "Akaun ini tidak didaftarkan sebagai Ketua Unit.",
-                true
-            );
-
-            console.error(
-                "KETUA UNIT TIDAK DITEMUI:",
+            .ilike(
+                "email",
                 email
-            );
-
-            return false;
-        }
-
-
-        // =================================================
-        // SIMPAN DATA KETUA UNIT
-        // =================================================
-
-        window.ketuaUnitLogin = ketua;
-
-
-        const namaKetua =
-            ketua.nama || "-";
-
-        const unitKetua =
-            ketua.unit || "-";
-
-
-        console.log(
-            "KETUA UNIT LOGIN:",
-            ketua
-        );
-
-
-        // =================================================
-        // PAPAR PADA INTERFACE
-        // =================================================
-
-        const namaPengguna =
-            document.getElementById(
-                "namaPengguna"
-            );
-
-        if (namaPengguna) {
-            namaPengguna.textContent =
-                namaKetua;
-        }
-
-
-        const namaSidebar =
-            document.getElementById(
-                "namaPenggunaSidebar"
-            );
-
-        if (namaSidebar) {
-            namaSidebar.textContent =
-                namaKetua;
-        }
-
-
-        const paparKetuaUnit =
-            document.getElementById(
-                "paparKetuaUnit"
-            );
-
-        if (paparKetuaUnit) {
-            paparKetuaUnit.textContent =
-                namaKetua;
-        }
-
-
-        const paparUnit =
-            document.getElementById(
-                "paparUnit"
-            );
-
-        if (paparUnit) {
-            paparUnit.textContent =
-                unitKetua;
-        }
-
-
-        const unitPengguna =
-            document.getElementById(
-                "unitPengguna"
-            );
-
-        if (unitPengguna) {
-            unitPengguna.textContent =
-                unitKetua;
-        }
-
-
-        const unitSidebar =
-            document.getElementById(
-                "unitPenggunaSidebar"
-            );
-
-        if (unitSidebar) {
-            unitSidebar.textContent =
-                unitKetua;
-        }
-
-
-        return true;
-
-
-    } catch (error) {
-
-        console.error(
-            "RALAT PENGGUNA:",
-            error
-        );
-
-        paparStatus(
-            "Gagal mendapatkan maklumat Ketua Unit: " +
-            error.message,
-            true
-        );
-
-        return false;
-    }
-
-}
-
-// =====================================================
-// PROFIL KETUA UNIT
-// =====================================================
-
-async function dapatkanProfilKetuaUnit() {
-
-    try {
-
-        console.log(
-            "MENCARI PROFIL KETUA UNIT:",
-            pengguna.id
-        );
-
-
-        const {
-            data,
-            error
-        } =
-        await db
-            .from("pengguna_ketua_unit")
-            .select(`
-                id,
-                user_id,
-                email,
-                nama,
-                unit,
-                role,
-                status
-            `)
-            .eq(
-                "user_id",
-                pengguna.id
             )
             .eq(
                 "status",
@@ -533,20 +393,31 @@ async function dapatkanProfilKetuaUnit() {
             .maybeSingle();
 
 
-        if (error) {
-            throw error;
+        if (ketuaError) {
+
+            console.error(
+                "RALAT QUERY KETUA UNIT:",
+                ketuaError
+            );
+
+            throw ketuaError;
         }
 
 
-        if (!data) {
+        // =============================================
+        // TIADA REKOD KETUA UNIT
+        // =============================================
+
+        if (!ketua) {
 
             console.error(
-                "PROFIL KETUA UNIT TIADA."
+                "KETUA UNIT TIDAK DITEMUI:",
+                email
             );
 
 
             paparStatus(
-                "❌ Akaun ini belum didaftarkan sebagai Ketua Unit.",
+                "❌ Akaun ini tidak didaftarkan sebagai Ketua Unit.",
                 true
             );
 
@@ -555,14 +426,63 @@ async function dapatkanProfilKetuaUnit() {
         }
 
 
+        // =============================================
+        // SIMPAN PROFIL
+        // =============================================
+
         profilKetuaUnit =
-            data;
+            ketua;
+
+
+        // Simpan juga untuk compatibility
+        window.ketuaUnitLogin =
+            ketua;
 
 
         console.log(
-            "PROFIL KETUA UNIT:",
+            "KETUA UNIT LOGIN:",
             profilKetuaUnit
         );
+
+
+        const namaKetua =
+            ketua.nama || "-";
+
+
+        const unitKetua =
+            ketua.unit || "-";
+
+
+        // =============================================
+        // PAPAR NAMA PENGGUNA
+        // =============================================
+
+        const namaPengguna =
+            document.getElementById(
+                "namaPengguna"
+            );
+
+
+        if (namaPengguna) {
+
+            namaPengguna.textContent =
+                namaKetua;
+
+        }
+
+
+        const namaSidebar =
+            document.getElementById(
+                "namaPenggunaSidebar"
+            );
+
+
+        if (namaSidebar) {
+
+            namaSidebar.textContent =
+                namaKetua;
+
+        }
 
 
         // =============================================
@@ -578,7 +498,7 @@ async function dapatkanProfilKetuaUnit() {
         if (paparKetuaUnit) {
 
             paparKetuaUnit.textContent =
-                data.nama || "-";
+                namaKetua;
 
         }
 
@@ -596,7 +516,7 @@ async function dapatkanProfilKetuaUnit() {
         if (paparUnit) {
 
             paparUnit.textContent =
-                data.unit || "-";
+                unitKetua;
 
         }
 
@@ -610,7 +530,7 @@ async function dapatkanProfilKetuaUnit() {
         if (unitPengguna) {
 
             unitPengguna.textContent =
-                data.unit || "-";
+                unitKetua;
 
         }
 
@@ -624,9 +544,26 @@ async function dapatkanProfilKetuaUnit() {
         if (unitSidebar) {
 
             unitSidebar.textContent =
-                data.unit || "-";
+                unitKetua;
 
         }
+
+
+        console.log(
+            "NAMA KETUA:",
+            namaKetua
+        );
+
+
+        console.log(
+            "UNIT KETUA:",
+            unitKetua
+        );
+
+
+        console.log(
+            "================================="
+        );
 
 
         return true;
@@ -635,13 +572,13 @@ async function dapatkanProfilKetuaUnit() {
     } catch (error) {
 
         console.error(
-            "RALAT PROFIL KETUA UNIT:",
+            "RALAT PENGGUNA:",
             error
         );
 
 
         paparStatus(
-            "❌ Gagal mendapatkan profil Ketua Unit: " +
+            "❌ Gagal mendapatkan maklumat Ketua Unit: " +
             error.message,
             true
         );
@@ -662,10 +599,24 @@ async function muatAnggota() {
 
     paparLoading(true);
 
+
     try {
 
+        // =============================================
+        // PASTIKAN PROFIL ADA
+        // =============================================
+
+        if (!profilKetuaUnit) {
+
+            throw new Error(
+                "Profil Ketua Unit tidak ditemui."
+            );
+
+        }
+
+
         const unitKetua =
-            window.ketuaUnitLogin?.unit;
+            profilKetuaUnit.unit;
 
 
         if (!unitKetua) {
@@ -678,15 +629,24 @@ async function muatAnggota() {
 
 
         console.log(
-            "MUAT ANGGOTA UNIT:",
+            "================================="
+        );
+
+        console.log(
+            "MUAT ANGGOTA UNTUK UNIT:",
             unitKetua
         );
 
 
+        // =============================================
+        // QUERY DATA ANGGOTA
+        // =============================================
+
         const {
             data,
             error
-        } = await db
+        } =
+        await db
             .from("Data_Anggota")
             .select(`
                 noskb,
@@ -697,14 +657,26 @@ async function muatAnggota() {
                 ketua_unit,
                 status
             `)
-            .eq("unit", unitKetua)
-            .eq("status", "Aktif")
-            .order("poskhidmat", {
-                ascending: true
-            })
-            .order("nama", {
-                ascending: true
-            });
+            .eq(
+                "unit",
+                unitKetua
+            )
+            .eq(
+                "status",
+                "Aktif"
+            )
+            .order(
+                "poskhidmat",
+                {
+                    ascending: true
+                }
+            )
+            .order(
+                "nama",
+                {
+                    ascending: true
+                }
+            );
 
 
         if (error) {
@@ -712,7 +684,8 @@ async function muatAnggota() {
         }
 
 
-        anggota = data || [];
+        anggota =
+            data || [];
 
 
         console.log(
@@ -720,11 +693,16 @@ async function muatAnggota() {
             unitKetua
         );
 
+
         console.log(
             "JUMLAH ANGGOTA:",
             anggota.length
         );
 
+
+        // =============================================
+        // PAPAR
+        // =============================================
 
         paparAnggota();
 
@@ -736,11 +714,16 @@ async function muatAnggota() {
             error
         );
 
+
+        anggota = [];
+
+
         paparStatus(
-            "Gagal memuatkan anggota: " +
+            "❌ Gagal memuatkan anggota: " +
             error.message,
             true
         );
+
 
     } finally {
 
@@ -772,8 +755,12 @@ function paparAnggota() {
     if (!anggota.length) {
 
         container.innerHTML = `
+
             <div class="card">
-                <strong>Tiada anggota.</strong>
+
+                <strong>
+                    Tiada anggota.
+                </strong>
 
                 <p>
                     Tiada anggota aktif dijumpai
@@ -784,7 +771,9 @@ function paparAnggota() {
                         )}
                     </strong>.
                 </p>
+
             </div>
+
         `;
 
         return;
@@ -848,6 +837,7 @@ function paparAnggota() {
 
 
                 header.innerHTML = `
+
                     <span>
                         📍
                         ${escapeHtml(pos)}
@@ -857,6 +847,7 @@ function paparAnggota() {
                         ${senarai.length}
                         anggota
                     </small>
+
                 `;
 
 
@@ -906,11 +897,15 @@ function paparAnggota() {
                             </th>
 
                             <th rowspan="2">
+
                                 HARI BIASA
+
                                 <br>
+
                                 <small>
                                     JAM
                                 </small>
+
                             </th>
 
                             <th colspan="3">
@@ -991,7 +986,9 @@ function paparAnggota() {
                             </td>
 
                             <td>
-                                ${a.noskb ?? ""}
+                                ${escapeHtml(
+                                    a.noskb || ""
+                                )}
                             </td>
 
                             <td>
@@ -1057,13 +1054,24 @@ function paparAnggota() {
                 );
 
 
-                wrapper.appendChild(table);
+                wrapper.appendChild(
+                    table
+                );
 
-                card.appendChild(header);
 
-                card.appendChild(wrapper);
+                card.appendChild(
+                    header
+                );
 
-                container.appendChild(card);
+
+                card.appendChild(
+                    wrapper
+                );
+
+
+                container.appendChild(
+                    card
+                );
 
             }
         );
@@ -1075,30 +1083,50 @@ function paparAnggota() {
 // INPUT KLM
 // =====================================================
 
-function inputKLM(field, noskb) {
+function inputKLM(
+    field,
+    noskb
+) {
 
     return `
+
         <input
             type="number"
             min="0"
             step="0.01"
             class="input-klm"
             data-field="${field}"
-            data-noskb="${noskb}"
+            data-noskb="${escapeHtml(noskb)}"
             value="0"
         >
+
     `;
 
 }
 
 
 // =====================================================
-// MUAT DATA MINGGU
+// MUAT DATA KLM MINGGU
 // =====================================================
 
 async function muatDataMinggu() {
 
+    if (!profilKetuaUnit) {
+
+        console.warn(
+            "Profil Ketua Unit belum tersedia."
+        );
+
+        return;
+    }
+
+
     if (!anggota.length) {
+
+        console.warn(
+            "Tiada anggota."
+        );
+
         return;
     }
 
@@ -1119,10 +1147,25 @@ async function muatDataMinggu() {
         );
 
 
+    const unit =
+        profilKetuaUnit.unit;
+
+
     paparLoading(true);
 
 
     try {
+
+        console.log(
+            "MUAT KLM:",
+            {
+                bulan,
+                tahun,
+                minggu: mingguSemasa,
+                unit
+            }
+        );
+
 
         const {
             data,
@@ -1145,7 +1188,7 @@ async function muatDataMinggu() {
             )
             .eq(
                 "unit",
-                profilKetuaUnit.unit
+                unit
             );
 
 
@@ -1164,8 +1207,11 @@ async function muatDataMinggu() {
         );
 
 
+        // Bina semula table
         paparAnggota();
 
+
+        // Masukkan data sedia ada
         isiDataKeInput();
 
 
@@ -1197,38 +1243,47 @@ async function muatDataMinggu() {
 
 
 // =====================================================
-// ISI DATA KE INPUT
+// ISI DATA DB KE INPUT
 // =====================================================
 
 function isiDataKeInput() {
 
-    dataKLM.forEach(row => {
+    if (!dataKLM.length) {
+        return;
+    }
 
-        const inputs =
-            document.querySelectorAll(
-                `.input-klm[data-noskb="${row.noskb}"]`
+
+    dataKLM.forEach(
+        row => {
+
+            const inputs =
+                document.querySelectorAll(
+                    `.input-klm[data-noskb="${row.noskb}"]`
+                );
+
+
+            inputs.forEach(
+                input => {
+
+                    const field =
+                        input.dataset.field;
+
+
+                    if (
+                        row[field] !== null &&
+                        row[field] !== undefined
+                    ) {
+
+                        input.value =
+                            row[field];
+
+                    }
+
+                }
             );
 
-
-        inputs.forEach(input => {
-
-            const field =
-                input.dataset.field;
-
-
-            if (
-                row[field] !== null &&
-                row[field] !== undefined
-            ) {
-
-                input.value =
-                    row[field];
-
-            }
-
-        });
-
-    });
+        }
+    );
 
 }
 
@@ -1291,6 +1346,9 @@ async function simpanMinggu() {
         );
 
 
+    if (!btn) return;
+
+
     btn.disabled = true;
 
     btn.textContent =
@@ -1302,79 +1360,89 @@ async function simpanMinggu() {
         const rows = [];
 
 
-        anggota.forEach(a => {
+        anggota.forEach(
+            a => {
 
-            const inputs =
-                document.querySelectorAll(
-                    `.input-klm[data-noskb="${a.noskb}"]`
+                const inputs =
+                    document.querySelectorAll(
+                        `.input-klm[data-noskb="${a.noskb}"]`
+                    );
+
+
+                const values = {};
+
+
+                inputs.forEach(
+                    input => {
+
+                        values[
+                            input.dataset.field
+                        ] =
+                            Number(
+                                input.value || 0
+                            );
+
+                    }
                 );
 
 
-            const values = {};
+                rows.push({
+
+                    bulan,
+
+                    tahun,
+
+                    minggu:
+                        mingguSemasa,
+
+                    unit,
+
+                    poskhidmat:
+                        a.poskhidmat,
+
+                    noskb:
+                        a.noskb,
+
+                    noanggota:
+                        a.noanggota,
+
+                    nama:
+                        a.nama,
+
+                    hari_biasa_jam:
+                        values.hari_biasa_jam || 0,
+
+                    off_kurang_4:
+                        values.off_kurang_4 || 0,
+
+                    off_kurang_8:
+                        values.off_kurang_8 || 0,
+
+                    off_lebih_8:
+                        values.off_lebih_8 || 0,
+
+                    cuti_kurang_8:
+                        values.cuti_kurang_8 || 0,
+
+                    cuti_lebih_8:
+                        values.cuti_lebih_8 || 0,
+
+                    ketua_unit:
+                        ketuaUnit,
+
+                    updated_at:
+                        new Date().toISOString()
+
+                });
+
+            }
+        );
 
 
-            inputs.forEach(input => {
-
-                values[
-                    input.dataset.field
-                ] =
-                    Number(
-                        input.value || 0
-                    );
-
-            });
-
-
-            rows.push({
-
-                bulan,
-
-                tahun,
-
-                minggu:
-                    mingguSemasa,
-
-                unit,
-
-                poskhidmat:
-                    a.poskhidmat,
-
-                noskb:
-                    a.noskb,
-
-                noanggota:
-                    a.noanggota,
-
-                nama:
-                    a.nama,
-
-                hari_biasa_jam:
-                    values.hari_biasa_jam || 0,
-
-                off_kurang_4:
-                    values.off_kurang_4 || 0,
-
-                off_kurang_8:
-                    values.off_kurang_8 || 0,
-
-                off_lebih_8:
-                    values.off_lebih_8 || 0,
-
-                cuti_kurang_8:
-                    values.cuti_kurang_8 || 0,
-
-                cuti_lebih_8:
-                    values.cuti_lebih_8 || 0,
-
-                ketua_unit:
-                    ketuaUnit,
-
-                updated_at:
-                    new Date().toISOString()
-
-            });
-
-        });
+        console.log(
+            "DATA UNTUK SIMPAN:",
+            rows
+        );
 
 
         const {
@@ -1397,7 +1465,7 @@ async function simpanMinggu() {
 
 
         paparStatus(
-            `✅ ${mingguSemasa} berjaya disimpan.`
+            `✅ ${mingguSemasa} berjaya disimpan untuk unit ${unit}.`
         );
 
 
@@ -1433,6 +1501,7 @@ async function simpanMinggu() {
 
         btn.textContent =
             "❌ GAGAL SIMPAN";
+
 
     } finally {
 
@@ -1532,7 +1601,7 @@ function paparLoading(show) {
 
 function escapeHtml(value) {
 
-    return String(value)
+    return String(value ?? "")
 
         .replaceAll(
             "&",
