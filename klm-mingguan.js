@@ -317,8 +317,8 @@ function pasangEvent() {
 
 // =====================================================
 // PENGGUNA + KETUA UNIT
-// SUMBER UTAMA: Data_Anggota
-// SYARAT: jawatan = Ketua Unit + status = Aktif
+// LOGIN GUNA EMAIL
+// EMAIL AUTH SUPABASE = EMAIL PENDAFTARAN
 // =====================================================
 
 async function dapatkanPengguna() {
@@ -342,9 +342,7 @@ async function dapatkanPengguna() {
 
         if (!user) {
 
-            console.warn(
-                "Tiada pengguna login."
-            );
+            console.warn("Tiada pengguna login.");
 
             window.location.href = "login.html";
 
@@ -353,204 +351,66 @@ async function dapatkanPengguna() {
 
         pengguna = user;
 
-        const email =
+        const emailLogin =
             (user.email || "")
                 .trim()
                 .toLowerCase();
 
+
         console.log("=================================");
-        console.log("AUTH USER:", email);
+        console.log("AUTH USER:", emailLogin);
         console.log("USER ID:", user.id);
         console.log("=================================");
 
 
         // =============================================
-        // 2. AMBIL SEMUA KETUA UNIT AKTIF
+        // 2. CARI TERUS BERDASARKAN EMAIL
         // =============================================
 
         const {
-            data: ketuaUnitList,
-            error: ketuaError
+            data: profil,
+            error: profilError
         } = await db
-            .from("Data_Anggota")
+            .from("pengguna_ketua_unit")
             .select(`
-                noskb,
-                noanggota,
+                id,
+                user_id,
+                email,
                 nama,
-                poskhidmat,
                 unit,
-                jawatan,
-                ketua_pos,
-                ketua_unit,
+                role,
                 status
             `)
-            .eq("jawatan", "Ketua Unit")
-            .eq("status", "Aktif");
-
-
-        if (ketuaError) {
-            throw ketuaError;
-        }
-
-
-        console.log(
-            "SENARAI KETUA UNIT:",
-            ketuaUnitList
-        );
-
-
-        // =============================================
-        // 3. TENTUKAN NAMA DARIPADA EMAIL
-        // =============================================
-
-        const prefix =
-            email
-                .split("@")[0]
-                .trim()
-                .toLowerCase();
-
-
-        console.log(
-            "EMAIL PREFIX:",
-            prefix
-        );
-
-
-        // =============================================
-        // 4. CARI KETUA UNIT
-        // =============================================
-
-        let ketua = null;
-
-
-        // ---------------------------------------------
-        // CUBA USER METADATA
-        // ---------------------------------------------
-
-        const namaMetadata =
-            (
-                user.user_metadata?.nama ||
-                user.user_metadata?.full_name ||
-                user.user_metadata?.name ||
-                ""
+            .eq(
+                "email",
+                emailLogin
             )
-            .trim()
-            .toLowerCase();
+            .eq(
+                "status",
+                "Aktif"
+            )
+            .maybeSingle();
 
 
-        if (namaMetadata) {
-
-            ketua =
-                ketuaUnitList?.find(
-                    row =>
-                        (row.nama || "")
-                            .trim()
-                            .toLowerCase() ===
-                        namaMetadata
-                );
-
-        }
-
-
-        // ---------------------------------------------
-        // CUBA PREFIX EMAIL
-        // ---------------------------------------------
-
-        if (!ketua) {
-
-            ketua =
-                ketuaUnitList?.find(
-                    row => {
-
-                        const nama =
-                            (row.nama || "")
-                                .trim()
-                                .toLowerCase();
-
-                        const namaPertama =
-                            nama
-                                .split(/\s+/)[0];
-
-                        return (
-                            namaPertama ===
-                            prefix
-                        );
-
-                    }
-                );
-
-        }
-
-
-        // ---------------------------------------------
-        // CUBA NAMA MENGANDUNGI PREFIX
-        // ---------------------------------------------
-
-        if (!ketua) {
-
-            ketua =
-                ketuaUnitList?.find(
-                    row => {
-
-                        const nama =
-                            (row.nama || "")
-                                .trim()
-                                .toLowerCase();
-
-                        return nama.startsWith(
-                            prefix + " "
-                        );
-
-                    }
-                );
-
+        if (profilError) {
+            throw profilError;
         }
 
 
         // =============================================
-        // KHAS AKAUN
+        // 3. EMAIL TIDAK DIDAFTARKAN
         // =============================================
 
-        if (
-            !ketua &&
-            prefix === "hamzah"
-        ) {
-
-            ketua =
-                ketuaUnitList?.find(
-                    row =>
-                        row.nama ===
-                        "Hamzah Bin Daub"
-                );
-
-        }
-
-
-        // =============================================
-        // JIKA TIADA
-        // =============================================
-
-        if (!ketua) {
+        if (!profil) {
 
             console.error(
-                "❌ KETUA UNIT TIDAK DITEMUI"
+                "❌ EMAIL TIDAK DIDAFTARKAN"
             );
 
             console.error(
-                "EMAIL:",
-                email
+                "EMAIL LOGIN:",
+                emailLogin
             );
-
-            console.error(
-                "PREFIX:",
-                prefix
-            );
-
-            console.error(
-                "KETUA UNIT DALAM DATABASE:",
-                ketuaUnitList
-            );
-
 
             paparStatus(
                 "❌ Email ini belum didaftarkan sebagai Ketua Unit.",
@@ -562,67 +422,102 @@ async function dapatkanPengguna() {
 
 
         // =============================================
-        // 5. SIMPAN PROFIL
+        // 4. SIMPAN PROFIL KETUA UNIT
         // =============================================
 
         profilKetuaUnit = {
 
-            noskb:
-                ketua.noskb,
-
-            noanggota:
-                ketua.noanggota,
-
-            nama:
-                ketua.nama,
-
-            poskhidmat:
-                ketua.poskhidmat,
-
-            unit:
-                ketua.unit,
-
-            jawatan:
-                ketua.jawatan,
-
-            ketua_pos:
-                ketua.ketua_pos,
-
-            ketua_unit:
-                ketua.ketua_unit,
-
-            status:
-                ketua.status,
-
-            email:
-                email,
+            id:
+                profil.id,
 
             user_id:
-                user.id
+                user.id,
+
+            email:
+                profil.email,
+
+            nama:
+                profil.nama,
+
+            unit:
+                profil.unit,
+
+            role:
+                profil.role,
+
+            status:
+                profil.status
 
         };
 
+
+        // =============================================
+        // 5. UPDATE USER_ID JIKA BELUM ADA
+        // =============================================
+
+        if (
+            !profil.user_id ||
+            profil.user_id !== user.id
+        ) {
+
+            const {
+                error: updateError
+            } = await db
+                .from("pengguna_ketua_unit")
+                .update({
+                    user_id: user.id,
+                    updated_at:
+                        new Date().toISOString()
+                })
+                .eq(
+                    "id",
+                    profil.id
+                );
+
+
+            if (updateError) {
+
+                console.warn(
+                    "⚠️ Gagal kemaskini USER_ID:",
+                    updateError
+                );
+
+            } else {
+
+                console.log(
+                    "✅ USER_ID BERJAYA DIKAITKAN"
+                );
+
+            }
+
+        }
+
+
+        // =============================================
+        // 6. SIMPAN GLOBAL
+        // =============================================
 
         window.ketuaUnitLogin =
             profilKetuaUnit;
 
 
         // =============================================
-        // 6. DEBUG
+        // 7. DEBUG
         // =============================================
 
         console.log("=================================");
         console.log("✅ KETUA UNIT DITEMUI");
+        console.log("ID:", profilKetuaUnit.id);
         console.log("NAMA:", profilKetuaUnit.nama);
-        console.log("UNIT:", profilKetuaUnit.unit);
-        console.log("JAWATAN:", profilKetuaUnit.jawatan);
-        console.log("NO SKB:", profilKetuaUnit.noskb);
         console.log("EMAIL:", profilKetuaUnit.email);
+        console.log("UNIT:", profilKetuaUnit.unit);
+        console.log("ROLE:", profilKetuaUnit.role);
+        console.log("USER ID:", profilKetuaUnit.user_id);
         console.log("=================================");
 
 
         // =============================================
-        // 7. PAPAR NAMA
+        // 8. PAPAR NAMA
         // =============================================
 
         const namaPengguna =
@@ -652,7 +547,7 @@ async function dapatkanPengguna() {
 
 
         // =============================================
-        // 8. PAPAR KETUA UNIT
+        // 9. PAPAR KETUA UNIT
         // =============================================
 
         const paparKetuaUnit =
@@ -669,7 +564,7 @@ async function dapatkanPengguna() {
 
 
         // =============================================
-        // 9. PAPAR UNIT
+        // 10. PAPAR UNIT
         // =============================================
 
         const paparUnit =
