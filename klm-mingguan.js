@@ -300,7 +300,7 @@ function pasangEvent() {
 
 // =====================================================
 // PENGGUNA + KETUA UNIT
-// CARI KETUA UNIT MELALUI Data_Anggota.jawatan
+// CARI KETUA UNIT DALAM Data_Anggota.jawatan
 // =====================================================
 
 async function dapatkanPengguna() {
@@ -316,14 +316,11 @@ async function dapatkanPengguna() {
             error: authError
         } = await db.auth.getUser();
 
-
         if (authError) {
             throw authError;
         }
 
-
         const user = authData?.user;
-
 
         if (!user) {
 
@@ -331,261 +328,271 @@ async function dapatkanPengguna() {
                 "Tiada pengguna login."
             );
 
-            window.location.href =
-                "login.html";
+            window.location.href = "login.html";
 
             return false;
         }
-
 
         pengguna = user;
 
-
         const email =
             (user.email || "")
-            .trim()
-            .toLowerCase();
+                .trim()
+                .toLowerCase();
 
-
-        console.log(
-            "================================="
-        );
-
-        console.log(
-            "AUTH USER:",
-            email
-        );
-
-        console.log(
-            "USER ID:",
-            user.id
-        );
+        console.log("=================================");
+        console.log("AUTH USER:", email);
+        console.log("USER ID:", user.id);
+        console.log("CARI KETUA UNIT DALAM Data_Anggota");
+        console.log("=================================");
 
 
         // =============================================
-        // CARI PROFIL DALAM pengguna_ketua_unit
-        // UNTUK DAPATKAN NAMA KETUA UNIT
+        // NAMA LOGIN
+        //
+        // Untuk Hamzah:
+        // hamzah@fpb.com
+        // -> cari nama yang sepadan
+        //
+        // Kita juga boleh gunakan metadata
+        // jika ada.
+        // =============================================
+
+        const namaMetadata =
+            user.user_metadata?.nama ||
+            user.user_metadata?.full_name ||
+            user.user_metadata?.name ||
+            "";
+
+
+        // =============================================
+        // AMBIL SEMUA KETUA UNIT AKTIF
         // =============================================
 
         const {
-            data: akaun,
-            error: akaunError
-        } = await db
-            .from("pengguna_ketua_unit")
-            .select(`
-                id,
-                user_id,
-                email,
-                nama,
-                unit,
-                role,
-                status
-            `)
-            .ilike(
-                "email",
-                email
-            )
-            .eq(
-                "status",
-                "Aktif"
-            )
-            .eq(
-                "role",
-                "ketua_unit"
-            )
-            .maybeSingle();
-
-
-        if (akaunError) {
-
-            console.error(
-                "RALAT QUERY pengguna_ketua_unit:",
-                akaunError
-            );
-
-            throw akaunError;
-        }
-
-
-        if (!akaun) {
-
-            console.error(
-                "AKAUN KETUA UNIT TIDAK DITEMUI:",
-                email
-            );
-
-
-            paparStatus(
-                "❌ Email ini belum didaftarkan sebagai Ketua Unit.",
-                true
-            );
-
-
-            return false;
-        }
-
-
-        console.log(
-            "AKAUN KETUA UNIT:",
-            akaun
-        );
-
-
-        // =============================================
-        // CARI DALAM Data_Anggota
-        // BERDASARKAN NAMA + jawatan
-        // =============================================
-
-        const namaKetua =
-            (akaun.nama || "")
-            .trim();
-
-
-        const {
-            data: ketuaAnggota,
-            error: anggotaError
+            data: senaraiKetua,
+            error: ketuaError
         } = await db
             .from("Data_Anggota")
             .select(`
                 noskb,
                 noanggota,
                 nama,
-                poskhidmat,
                 unit,
                 jawatan,
+                status,
+                poskhidmat,
                 ketua_pos,
-                ketua_unit,
-                status
+                ketua_unit
             `)
-            .eq(
-                "jawatan",
-                "Ketua Unit"
-            )
-            .eq(
-                "status",
-                "Aktif"
-            )
-            .ilike(
-                "nama",
-                namaKetua
-            )
-            .maybeSingle();
+            .eq("jawatan", "Ketua Unit")
+            .eq("status", "Aktif")
+            .order("nama", {
+                ascending: true
+            });
 
 
-        if (anggotaError) {
+        if (ketuaError) {
+            throw ketuaError;
+        }
 
-            console.error(
-                "RALAT CARI KETUA DALAM Data_Anggota:",
-                anggotaError
-            );
 
-            throw anggotaError;
+        console.log(
+            "SENARAI KETUA UNIT AKTIF:",
+            senaraiKetua
+        );
+
+
+        // =============================================
+        // CARI BERDASARKAN NAMA
+        // =============================================
+
+        let ketua = null;
+
+
+        // ---------------------------------------------
+        // 1. CUBA NAMA DARI USER METADATA
+        // ---------------------------------------------
+
+        if (namaMetadata) {
+
+            ketua =
+                senaraiKetua?.find(
+                    x =>
+                        (x.nama || "")
+                            .trim()
+                            .toLowerCase() ===
+                        namaMetadata
+                            .trim()
+                            .toLowerCase()
+                );
+
+        }
+
+
+        // ---------------------------------------------
+        // 2. CUBA EMAIL PREFIX
+        //
+        // hamzah@fpb.com
+        // -> hamzah
+        //
+        // Kemudian padankan nama yang mengandungi
+        // "Hamzah"
+        // ---------------------------------------------
+
+        if (!ketua) {
+
+            const namaEmail =
+                email
+                    .split("@")[0]
+                    .replace(/[._-]/g, " ")
+                    .trim()
+                    .toLowerCase();
+
+
+            ketua =
+                senaraiKetua?.find(
+                    x => {
+
+                        const nama =
+                            (x.nama || "")
+                                .toLowerCase();
+
+                        return nama.includes(
+                            namaEmail
+                        );
+
+                    }
+                );
+
         }
 
 
         // =============================================
-        // KETUA UNIT TIDAK DITEMUI
+        // 3. KHAS UNTUK AKAUN YANG EMAIL PREFIX
+        //    TIDAK SAMA SEPENUHNYA DENGAN NAMA
+        //
+        // Contoh:
+        // hamzah@fpb.com
+        // Hamzah Bin Daub
         // =============================================
 
-        if (!ketuaAnggota) {
+        if (!ketua) {
+
+            const prefix =
+                email
+                    .split("@")[0]
+                    .trim()
+                    .toLowerCase();
+
+
+            ketua =
+                senaraiKetua?.find(
+                    x => {
+
+                        const namaPertama =
+                            (x.nama || "")
+                                .trim()
+                                .split(/\s+/)[0]
+                                .toLowerCase();
+
+                        return (
+                            namaPertama ===
+                            prefix
+                        );
+
+                    }
+                );
+
+        }
+
+
+        // =============================================
+        // TIADA KETUA UNIT
+        // =============================================
+
+        if (!ketua) {
 
             console.error(
-                "Ketua Unit tidak ditemui dalam Data_Anggota.jawatan:",
-                namaKetua
+                "❌ KETUA UNIT TIDAK DITEMUI DALAM Data_Anggota"
+            );
+
+            console.error(
+                "EMAIL LOGIN:",
+                email
+            );
+
+            console.error(
+                "USER METADATA:",
+                user.user_metadata
+            );
+
+            console.error(
+                "SENARAI KETUA UNIT:",
+                senaraiKetua
             );
 
 
             paparStatus(
-                "❌ Ketua Unit tidak ditemui dalam Data_Anggota.jawatan.",
+                "❌ Email ini belum didaftarkan sebagai Ketua Unit dalam Data_Anggota.",
                 true
             );
 
 
             return false;
+
         }
 
 
         // =============================================
-        // BINA PROFIL SEBENAR
+        // SIMPAN PROFIL KETUA UNIT
         // =============================================
 
         profilKetuaUnit = {
 
-            id:
-                akaun.id,
+            noskb:
+                ketua.noskb,
 
-            user_id:
-                user.id,
+            noanggota:
+                ketua.noanggota,
+
+            nama:
+                ketua.nama,
+
+            unit:
+                ketua.unit,
+
+            jawatan:
+                ketua.jawatan,
+
+            status:
+                ketua.status,
+
+            poskhidmat:
+                ketua.poskhidmat,
 
             email:
                 email,
 
-            nama:
-                ketuaAnggota.nama,
-
-            unit:
-                ketuaAnggota.unit,
-
-            role:
-                "ketua_unit",
-
-            status:
-                ketuaAnggota.status,
-
-            noskb:
-                ketuaAnggota.noskb,
-
-            noanggota:
-                ketuaAnggota.noanggota,
-
-            poskhidmat:
-                ketuaAnggota.poskhidmat,
-
-            jawatan:
-                ketuaAnggota.jawatan
+            user_id:
+                user.id
 
         };
 
 
+        // Compatibility
         window.ketuaUnitLogin =
             profilKetuaUnit;
 
 
-        // =============================================
-        // LOG
-        // =============================================
-
-        console.log(
-            "================================="
-        );
-
-        console.log(
-            "KETUA UNIT DIKENALPASTI"
-        );
-
-        console.log(
-            "NAMA:",
-            profilKetuaUnit.nama
-        );
-
-        console.log(
-            "NO SKB:",
-            profilKetuaUnit.noskb
-        );
-
-        console.log(
-            "UNIT:",
-            profilKetuaUnit.unit
-        );
-
-        console.log(
-            "JAWATAN:",
-            profilKetuaUnit.jawatan
-        );
-
-        console.log(
-            "================================="
-        );
+        console.log("=================================");
+        console.log("✅ KETUA UNIT DITEMUI");
+        console.log("NAMA:", profilKetuaUnit.nama);
+        console.log("UNIT:", profilKetuaUnit.unit);
+        console.log("JAWATAN:", profilKetuaUnit.jawatan);
+        console.log("NO SKB:", profilKetuaUnit.noskb);
+        console.log("EMAIL:", profilKetuaUnit.email);
+        console.log("=================================");
 
 
         // =============================================
@@ -596,7 +603,6 @@ async function dapatkanPengguna() {
             document.getElementById(
                 "namaPengguna"
             );
-
 
         if (namaPengguna) {
 
@@ -611,7 +617,6 @@ async function dapatkanPengguna() {
                 "namaPenggunaSidebar"
             );
 
-
         if (namaSidebar) {
 
             namaSidebar.textContent =
@@ -620,11 +625,14 @@ async function dapatkanPengguna() {
         }
 
 
+        // =============================================
+        // PAPAR KETUA UNIT
+        // =============================================
+
         const paparKetuaUnit =
             document.getElementById(
                 "paparKetuaUnit"
             );
-
 
         if (paparKetuaUnit) {
 
@@ -638,20 +646,15 @@ async function dapatkanPengguna() {
         // PAPAR UNIT
         // =============================================
 
-        const unit =
-            profilKetuaUnit.unit;
-
-
         const paparUnit =
             document.getElementById(
                 "paparUnit"
             );
 
-
         if (paparUnit) {
 
             paparUnit.textContent =
-                unit;
+                profilKetuaUnit.unit;
 
         }
 
@@ -661,11 +664,10 @@ async function dapatkanPengguna() {
                 "unitPengguna"
             );
 
-
         if (unitPengguna) {
 
             unitPengguna.textContent =
-                unit;
+                profilKetuaUnit.unit;
 
         }
 
@@ -675,11 +677,10 @@ async function dapatkanPengguna() {
                 "unitPenggunaSidebar"
             );
 
-
         if (unitSidebar) {
 
             unitSidebar.textContent =
-                unit;
+                profilKetuaUnit.unit;
 
         }
 
@@ -690,13 +691,13 @@ async function dapatkanPengguna() {
     } catch (error) {
 
         console.error(
-            "RALAT PENGGUNA:",
+            "❌ RALAT DAPATKAN PENGGUNA:",
             error
         );
 
 
         paparStatus(
-            "❌ Gagal mendapatkan maklumat Ketua Unit: " +
+            "❌ Gagal mendapatkan Ketua Unit: " +
             error.message,
             true
         );
