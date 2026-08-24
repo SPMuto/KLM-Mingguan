@@ -25,6 +25,13 @@ let mingguSemasa = "MINGGU 1";
 
 
 // =====================================================
+// KAWAL QUERY KLM
+// =====================================================
+
+let klmLoading = false;
+let klmRequestNo = 0;
+
+// =====================================================
 // INIT
 // =====================================================
 
@@ -158,9 +165,65 @@ function pasangEvent() {
         .querySelectorAll(".week-tab")
         .forEach(tab => {
 
-            tab.addEventListener(
-                "click",
-                async () => {
+tab.addEventListener(
+    "click",
+    async () => {
+
+        const mingguBaru =
+            tab.dataset.minggu;
+
+
+        // =============================================
+        // JIKA MINGGU SAMA - TAK PERLU QUERY
+        // =============================================
+
+        if (
+            mingguBaru === mingguSemasa
+        ) {
+
+            return;
+
+        }
+
+
+        document
+            .querySelectorAll(".week-tab")
+            .forEach(t => {
+
+                t.classList.remove(
+                    "active"
+                );
+
+            });
+
+
+        tab.classList.add(
+            "active"
+        );
+
+
+        mingguSemasa =
+            mingguBaru;
+
+
+        const text =
+            document.getElementById(
+                "mingguSemasaText"
+            );
+
+
+        if (text) {
+
+            text.textContent =
+                mingguSemasa;
+
+        }
+
+
+        await muatDataMinggu();
+
+    }
+);
 
                     document
                         .querySelectorAll(".week-tab")
@@ -1237,6 +1300,7 @@ function inputKLM(
 
 // =====================================================
 // MUAT DATA KLM MINGGU
+// VERSI DIKEMASKINI - ELAK QUERY BERULANG
 // =====================================================
 
 async function muatDataMinggu() {
@@ -1248,6 +1312,7 @@ async function muatDataMinggu() {
         );
 
         return;
+
     }
 
 
@@ -1258,27 +1323,63 @@ async function muatDataMinggu() {
         );
 
         return;
+
+    }
+
+
+    const bulanEl =
+        document.getElementById("bulan");
+
+    const tahunEl =
+        document.getElementById("tahun");
+
+
+    if (!bulanEl || !tahunEl) {
+
+        console.warn(
+            "Element bulan/tahun tidak dijumpai."
+        );
+
+        return;
+
     }
 
 
     const bulan =
-        Number(
-            document.getElementById(
-                "bulan"
-            ).value
-        );
+        Number(bulanEl.value);
 
 
     const tahun =
-        Number(
-            document.getElementById(
-                "tahun"
-            ).value
-        );
+        Number(tahunEl.value);
 
 
     const unit =
-        profilKetuaUnit.unit;
+        (profilKetuaUnit.unit || "").trim();
+
+
+    const minggu =
+        mingguSemasa;
+
+
+    // =============================================
+    // ELAK QUERY BERGANDA
+    // =============================================
+
+    if (klmLoading) {
+
+        console.log(
+            "⏳ QUERY KLM SEDANG BERJALAN - ABAIKAN REQUEST BARU"
+        );
+
+        return;
+
+    }
+
+
+    klmLoading = true;
+
+    const requestNo =
+        ++klmRequestNo;
 
 
     paparLoading(true);
@@ -1287,13 +1388,40 @@ async function muatDataMinggu() {
     try {
 
         console.log(
-            "MUAT KLM:",
-            {
-                bulan,
-                tahun,
-                minggu: mingguSemasa,
-                unit
-            }
+            "================================="
+        );
+
+        console.log(
+            "📥 MUAT KLM"
+        );
+
+        console.log(
+            "REQUEST:",
+            requestNo
+        );
+
+        console.log(
+            "BULAN:",
+            bulan
+        );
+
+        console.log(
+            "TAHUN:",
+            tahun
+        );
+
+        console.log(
+            "MINGGU:",
+            minggu
+        );
+
+        console.log(
+            "UNIT:",
+            unit
+        );
+
+        console.log(
+            "================================="
         );
 
 
@@ -1314,7 +1442,7 @@ async function muatDataMinggu() {
             )
             .eq(
                 "minggu",
-                mingguSemasa
+                minggu
             )
             .eq(
                 "unit",
@@ -1323,7 +1451,9 @@ async function muatDataMinggu() {
 
 
         if (error) {
+
             throw error;
+
         }
 
 
@@ -1332,25 +1462,34 @@ async function muatDataMinggu() {
 
 
         console.log(
-            "DATA KLM:",
+            "✅ DATA KLM:",
             dataKLM.length
         );
 
 
-        // Bina semula table
+        // =============================================
+        // BINA TABLE
+        // =============================================
+
         paparAnggota();
 
 
-        // Masukkan data sedia ada
+        // =============================================
+        // MASUKKAN DATA DB
+        // =============================================
+
         isiDataKeInput();
 
 
     } catch (error) {
 
         console.error(
-            "RALAT MUAT KLM:",
+            "❌ RALAT MUAT KLM:",
             error
         );
+
+
+        dataKLM = [];
 
 
         paparAnggota();
@@ -1365,12 +1504,13 @@ async function muatDataMinggu() {
 
     } finally {
 
+        klmLoading = false;
+
         paparLoading(false);
 
     }
 
 }
-
 
 // =====================================================
 // ISI DATA DB KE INPUT
