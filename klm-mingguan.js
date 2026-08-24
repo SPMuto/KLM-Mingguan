@@ -156,7 +156,6 @@ function tetapkanBulanSemasa() {
 
 function pasangEvent() {
 
-
     // =============================================
     // WEEK TAB
     // =============================================
@@ -165,102 +164,58 @@ function pasangEvent() {
         .querySelectorAll(".week-tab")
         .forEach(tab => {
 
-tab.addEventListener(
-    "click",
-    async () => {
+            tab.addEventListener("click", async () => {
 
-        const mingguBaru =
-            tab.dataset.minggu;
+                const mingguBaru =
+                    tab.dataset.minggu;
 
+                // =============================================
+                // JIKA MINGGU SAMA - TAK PERLU QUERY
+                // =============================================
 
-        // =============================================
-        // JIKA MINGGU SAMA - TAK PERLU QUERY
-        // =============================================
+                if (mingguBaru === mingguSemasa) {
+                    return;
+                }
 
-        if (
-            mingguBaru === mingguSemasa
-        ) {
+                // =============================================
+                // ACTIVE TAB
+                // =============================================
 
-            return;
+                document
+                    .querySelectorAll(".week-tab")
+                    .forEach(t => {
+                        t.classList.remove("active");
+                    });
 
-        }
+                tab.classList.add("active");
 
+                // =============================================
+                // SIMPAN MINGGU SEMASA
+                // =============================================
 
-        document
-            .querySelectorAll(".week-tab")
-            .forEach(t => {
+                mingguSemasa = mingguBaru;
 
-                t.classList.remove(
-                    "active"
-                );
+                // =============================================
+                // PAPAR MINGGU
+                // =============================================
+
+                const text =
+                    document.getElementById(
+                        "mingguSemasaText"
+                    );
+
+                if (text) {
+                    text.textContent =
+                        mingguSemasa;
+                }
+
+                // =============================================
+                // MUAT DATA
+                // =============================================
+
+                await muatDataMinggu();
 
             });
-
-
-        tab.classList.add(
-            "active"
-        );
-
-
-        mingguSemasa =
-            mingguBaru;
-
-
-        const text =
-            document.getElementById(
-                "mingguSemasaText"
-            );
-
-
-        if (text) {
-
-            text.textContent =
-                mingguSemasa;
-
-        }
-
-
-        await muatDataMinggu();
-
-    }
-);
-
-                    document
-                        .querySelectorAll(".week-tab")
-                        .forEach(t => {
-
-                            t.classList.remove(
-                                "active"
-                            );
-
-                        });
-
-
-                    tab.classList.add("active");
-
-
-                    mingguSemasa =
-                        tab.dataset.minggu;
-
-
-                    const text =
-                        document.getElementById(
-                            "mingguSemasaText"
-                        );
-
-
-                    if (text) {
-
-                        text.textContent =
-                            mingguSemasa;
-
-                    }
-
-
-                    await muatDataMinggu();
-
-                }
-            );
 
         });
 
@@ -359,7 +314,6 @@ tab.addEventListener(
     }
 
 }
-
 
 // =====================================================
 // PENGGUNA + KETUA UNIT
