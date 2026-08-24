@@ -300,6 +300,7 @@ function pasangEvent() {
 
 // =====================================================
 // PENGGUNA + KETUA UNIT
+// CARI KETUA UNIT MELALUI Data_Anggota.jawatan
 // =====================================================
 
 async function dapatkanPengguna() {
@@ -307,7 +308,7 @@ async function dapatkanPengguna() {
     try {
 
         // =============================================
-        // DAPATKAN SESSION USER
+        // DAPATKAN USER LOGIN
         // =============================================
 
         const {
@@ -321,8 +322,7 @@ async function dapatkanPengguna() {
         }
 
 
-        const user =
-            authData?.user;
+        const user = authData?.user;
 
 
         if (!user) {
@@ -363,13 +363,13 @@ async function dapatkanPengguna() {
 
 
         // =============================================
-        // CARI PROFIL KETUA UNIT
-        // BERDASARKAN EMAIL LOGIN
+        // CARI PROFIL DALAM pengguna_ketua_unit
+        // UNTUK DAPATKAN NAMA KETUA UNIT
         // =============================================
 
         const {
-            data: ketua,
-            error: ketuaError
+            data: akaun,
+            error: akaunError
         } = await db
             .from("pengguna_ketua_unit")
             .select(`
@@ -396,31 +396,107 @@ async function dapatkanPengguna() {
             .maybeSingle();
 
 
-        if (ketuaError) {
+        if (akaunError) {
 
             console.error(
-                "RALAT QUERY KETUA UNIT:",
-                ketuaError
+                "RALAT QUERY pengguna_ketua_unit:",
+                akaunError
             );
 
-            throw ketuaError;
+            throw akaunError;
         }
 
 
-        // =============================================
-        // TIADA REKOD KETUA UNIT
-        // =============================================
-
-        if (!ketua) {
+        if (!akaun) {
 
             console.error(
-                "KETUA UNIT TIDAK DITEMUI:",
+                "AKAUN KETUA UNIT TIDAK DITEMUI:",
                 email
             );
 
 
             paparStatus(
-                "❌ Akaun ini tidak didaftarkan sebagai Ketua Unit.",
+                "❌ Email ini belum didaftarkan sebagai Ketua Unit.",
+                true
+            );
+
+
+            return false;
+        }
+
+
+        console.log(
+            "AKAUN KETUA UNIT:",
+            akaun
+        );
+
+
+        // =============================================
+        // CARI DALAM Data_Anggota
+        // BERDASARKAN NAMA + jawatan
+        // =============================================
+
+        const namaKetua =
+            (akaun.nama || "")
+            .trim();
+
+
+        const {
+            data: ketuaAnggota,
+            error: anggotaError
+        } = await db
+            .from("Data_Anggota")
+            .select(`
+                noskb,
+                noanggota,
+                nama,
+                poskhidmat,
+                unit,
+                jawatan,
+                ketua_pos,
+                ketua_unit,
+                status
+            `)
+            .eq(
+                "jawatan",
+                "Ketua Unit"
+            )
+            .eq(
+                "status",
+                "Aktif"
+            )
+            .ilike(
+                "nama",
+                namaKetua
+            )
+            .maybeSingle();
+
+
+        if (anggotaError) {
+
+            console.error(
+                "RALAT CARI KETUA DALAM Data_Anggota:",
+                anggotaError
+            );
+
+            throw anggotaError;
+        }
+
+
+        // =============================================
+        // KETUA UNIT TIDAK DITEMUI
+        // =============================================
+
+        if (!ketuaAnggota) {
+
+            console.error(
+                "Ketua Unit tidak ditemui dalam Data_Anggota.jawatan:",
+                namaKetua
+            );
+
+
+            paparStatus(
+                "❌ Ketua Unit tidak ditemui dalam Data_Anggota.jawatan.",
                 true
             );
 
@@ -430,34 +506,90 @@ async function dapatkanPengguna() {
 
 
         // =============================================
-        // SIMPAN PROFIL
+        // BINA PROFIL SEBENAR
         // =============================================
 
-        profilKetuaUnit =
-            ketua;
+        profilKetuaUnit = {
+
+            id:
+                akaun.id,
+
+            user_id:
+                user.id,
+
+            email:
+                email,
+
+            nama:
+                ketuaAnggota.nama,
+
+            unit:
+                ketuaAnggota.unit,
+
+            role:
+                "ketua_unit",
+
+            status:
+                ketuaAnggota.status,
+
+            noskb:
+                ketuaAnggota.noskb,
+
+            noanggota:
+                ketuaAnggota.noanggota,
+
+            poskhidmat:
+                ketuaAnggota.poskhidmat,
+
+            jawatan:
+                ketuaAnggota.jawatan
+
+        };
 
 
-        // Simpan juga untuk compatibility
         window.ketuaUnitLogin =
-            ketua;
+            profilKetuaUnit;
 
+
+        // =============================================
+        // LOG
+        // =============================================
 
         console.log(
-            "KETUA UNIT LOGIN:",
-            profilKetuaUnit
+            "================================="
+        );
+
+        console.log(
+            "KETUA UNIT DIKENALPASTI"
+        );
+
+        console.log(
+            "NAMA:",
+            profilKetuaUnit.nama
+        );
+
+        console.log(
+            "NO SKB:",
+            profilKetuaUnit.noskb
+        );
+
+        console.log(
+            "UNIT:",
+            profilKetuaUnit.unit
+        );
+
+        console.log(
+            "JAWATAN:",
+            profilKetuaUnit.jawatan
+        );
+
+        console.log(
+            "================================="
         );
 
 
-        const namaKetua =
-            ketua.nama || "-";
-
-
-        const unitKetua =
-            ketua.unit || "-";
-
-
         // =============================================
-        // PAPAR NAMA PENGGUNA
+        // PAPAR NAMA
         // =============================================
 
         const namaPengguna =
@@ -469,7 +601,7 @@ async function dapatkanPengguna() {
         if (namaPengguna) {
 
             namaPengguna.textContent =
-                namaKetua;
+                profilKetuaUnit.nama;
 
         }
 
@@ -483,14 +615,10 @@ async function dapatkanPengguna() {
         if (namaSidebar) {
 
             namaSidebar.textContent =
-                namaKetua;
+                profilKetuaUnit.nama;
 
         }
 
-
-        // =============================================
-        // PAPAR KETUA UNIT
-        // =============================================
 
         const paparKetuaUnit =
             document.getElementById(
@@ -501,7 +629,7 @@ async function dapatkanPengguna() {
         if (paparKetuaUnit) {
 
             paparKetuaUnit.textContent =
-                namaKetua;
+                profilKetuaUnit.nama;
 
         }
 
@@ -509,6 +637,10 @@ async function dapatkanPengguna() {
         // =============================================
         // PAPAR UNIT
         // =============================================
+
+        const unit =
+            profilKetuaUnit.unit;
+
 
         const paparUnit =
             document.getElementById(
@@ -519,7 +651,7 @@ async function dapatkanPengguna() {
         if (paparUnit) {
 
             paparUnit.textContent =
-                unitKetua;
+                unit;
 
         }
 
@@ -533,7 +665,7 @@ async function dapatkanPengguna() {
         if (unitPengguna) {
 
             unitPengguna.textContent =
-                unitKetua;
+                unit;
 
         }
 
@@ -547,26 +679,9 @@ async function dapatkanPengguna() {
         if (unitSidebar) {
 
             unitSidebar.textContent =
-                unitKetua;
+                unit;
 
         }
-
-
-        console.log(
-            "NAMA KETUA:",
-            namaKetua
-        );
-
-
-        console.log(
-            "UNIT KETUA:",
-            unitKetua
-        );
-
-
-        console.log(
-            "================================="
-        );
 
 
         return true;
@@ -592,7 +707,6 @@ async function dapatkanPengguna() {
     }
 
 }
-
 
 // =====================================================
 // MUAT ANGGOTA MENGIKUT UNIT KETUA UNIT
