@@ -965,9 +965,12 @@ function kiraSemuaRM() {
         );
 
         return;
-
     }
 
+
+    // =================================================
+    // LOOP SETIAP ANGGOTA
+    // =================================================
 
     document
         .querySelectorAll(
@@ -975,9 +978,17 @@ function kiraSemuaRM() {
         )
         .forEach(tr => {
 
+            // =============================================
+            // NO SKB
+            // =============================================
+
             const noskb =
                 tr.dataset.noskb;
 
+
+            // =============================================
+            // CARI DATA ANGGOTA
+            // =============================================
 
             const anggotaData =
                 anggota.find(
@@ -986,6 +997,10 @@ function kiraSemuaRM() {
                         String(noskb)
                 );
 
+
+            // =============================================
+            // CARI DATA KLM
+            // =============================================
 
             const klm =
                 dataKLM.find(
@@ -996,13 +1011,15 @@ function kiraSemuaRM() {
 
 
             if (!anggotaData || !klm) {
+
                 return;
+
             }
 
 
-            // =========================================
-            // KADAR
-            // =========================================
+            // =================================================
+            // KADAR RM DARIPADA Data_Anggota
+            // =================================================
 
             const kadarBiasa =
                 Number(
@@ -1039,9 +1056,9 @@ function kiraSemuaRM() {
                 );
 
 
-            // =========================================
-            // DATA KLM
-            // =========================================
+            // =================================================
+            // DATA KLM MINGGUAN
+            // =================================================
 
             const hariBiasa =
                 Number(
@@ -1079,69 +1096,80 @@ function kiraSemuaRM() {
                 );
 
 
-            // =========================================
-            // FORMULA
-            // =========================================
+            // =================================================
+            // PENGIRAAN RM
+            // =================================================
+
+
+            // -------------------------------------------------
+            // 1. HARI BIASA
+            //
+            // hari_biasa_jam × rm_pehariklmbiasa
+            // -------------------------------------------------
 
             const rmHariBiasa =
                 hariBiasa *
                 kadarBiasa;
 
 
-            /*
-             * OFF < 4 JAM
-             *
-             * menggunakan kadar jam OFF
-             */
+            // -------------------------------------------------
+            // 2. OFF < 4 JAM
+            //
+            // DIABAIKAN
+            //
+            // Tiada bayaran RM
+            // -------------------------------------------------
 
-            const rmOffKurang4 =
-                offKurang4 *
-                kadarOffJam;
+            const rmOffKurang4 = 0;
 
 
-            /*
-             * OFF < 8 JAM
-             *
-             * menggunakan kadar jam OFF
-             */
+            // -------------------------------------------------
+            // 3. OFF < 8 JAM
+            //
+            // off_kurang_8 × rm_perjamoffday
+            // -------------------------------------------------
 
             const rmOffKurang8 =
                 offKurang8 *
                 kadarOffJam;
 
 
-            /*
-             * OFF > 8 JAM
-             *
-             * hari × kadar hari OFF
-             */
+            // -------------------------------------------------
+            // 4. OFF > 8 JAM
+            //
+            // off_lebih_8 × rm_perharioffday
+            // -------------------------------------------------
 
             const rmOffLebih8 =
                 offLebih8 *
                 kadarOffHari;
 
 
-            /*
-             * CUTI AM < 8 JAM
-             *
-             * menggunakan kadar jam CUTI AM
-             */
+            // -------------------------------------------------
+            // 5. CUTI AM < 8 JAM
+            //
+            // cuti_kurang_8 × rm_perjamcutiam
+            // -------------------------------------------------
 
             const rmCutiKurang8 =
                 cutiKurang8 *
                 kadarCutiJam;
 
 
-            /*
-             * CUTI AM > 8 JAM
-             *
-             * menggunakan kadar hari CUTI AM
-             */
+            // -------------------------------------------------
+            // 6. CUTI AM > 8 JAM
+            //
+            // cuti_lebih_8 × rm_perharicutiam
+            // -------------------------------------------------
 
             const rmCutiLebih8 =
                 cutiLebih8 *
                 kadarCutiHari;
 
+
+            // =================================================
+            // JUMLAH KESELURUHAN RM
+            // =================================================
 
             const jumlah =
                 rmHariBiasa +
@@ -1152,9 +1180,12 @@ function kiraSemuaRM() {
                 rmCutiLebih8;
 
 
-            // =========================================
-            // PAPAR
-            // =========================================
+            // =================================================
+            // PAPAR KE JADUAL
+            // =================================================
+
+
+            // HARI BIASA
 
             setRM(
                 tr,
@@ -1163,12 +1194,17 @@ function kiraSemuaRM() {
             );
 
 
+            // OFF < 4 JAM
+            // SENTIASA RM 0
+
             setRM(
                 tr,
                 "rm_off_kurang_4",
-                rmOffKurang4
+                0
             );
 
+
+            // OFF < 8 JAM
 
             setRM(
                 tr,
@@ -1177,12 +1213,16 @@ function kiraSemuaRM() {
             );
 
 
+            // OFF > 8 JAM
+
             setRM(
                 tr,
                 "rm_off_lebih_8",
                 rmOffLebih8
             );
 
+
+            // CUTI AM < 8 JAM
 
             setRM(
                 tr,
@@ -1191,6 +1231,8 @@ function kiraSemuaRM() {
             );
 
 
+            // CUTI AM > 8 JAM
+
             setRM(
                 tr,
                 "rm_cuti_lebih_8",
@@ -1198,21 +1240,146 @@ function kiraSemuaRM() {
             );
 
 
+            // JUMLAH RM
+
             setRM(
                 tr,
                 "rm_jumlah",
                 jumlah
             );
 
+
+            // =================================================
+            // DEBUG
+            // =================================================
+
+            console.log(
+                "================================="
+            );
+
+            console.log(
+                "PENGIRAAN RM"
+            );
+
+            console.log(
+                "NO SKB:",
+                noskb
+            );
+
+            console.log(
+                "NAMA:",
+                anggotaData.nama
+            );
+
+            console.log(
+                "---------------------------------"
+            );
+
+            console.log(
+                "KADAR HARI BIASA:",
+                kadarBiasa
+            );
+
+            console.log(
+                "KADAR OFF HARI:",
+                kadarOffHari
+            );
+
+            console.log(
+                "KADAR OFF JAM:",
+                kadarOffJam
+            );
+
+            console.log(
+                "KADAR CUTI HARI:",
+                kadarCutiHari
+            );
+
+            console.log(
+                "KADAR CUTI JAM:",
+                kadarCutiJam
+            );
+
+            console.log(
+                "---------------------------------"
+            );
+
+            console.log(
+                "HARI BIASA:",
+                hariBiasa,
+                "×",
+                kadarBiasa,
+                "=",
+                rmHariBiasa
+            );
+
+            console.log(
+                "OFF < 4 JAM:",
+                offKurang4,
+                "× ABAIKAN = RM 0.00"
+            );
+
+            console.log(
+                "OFF < 8 JAM:",
+                offKurang8,
+                "×",
+                kadarOffJam,
+                "=",
+                rmOffKurang8
+            );
+
+            console.log(
+                "OFF > 8 JAM:",
+                offLebih8,
+                "×",
+                kadarOffHari,
+                "=",
+                rmOffLebih8
+            );
+
+            console.log(
+                "CUTI AM < 8 JAM:",
+                cutiKurang8,
+                "×",
+                kadarCutiJam,
+                "=",
+                rmCutiKurang8
+            );
+
+            console.log(
+                "CUTI AM > 8 JAM:",
+                cutiLebih8,
+                "×",
+                kadarCutiHari,
+                "=",
+                rmCutiLebih8
+            );
+
+            console.log(
+                "---------------------------------"
+            );
+
+            console.log(
+                "JUMLAH RM:",
+                jumlah
+            );
+
+            console.log(
+                "================================="
+            );
+
         });
 
+
+    // =================================================
+    // STATUS
+    // =================================================
 
     paparStatus(
         "✅ Pengiraan RM berjaya dilakukan."
     );
 
 }
-
 
 // =====================================================
 // SET RM
