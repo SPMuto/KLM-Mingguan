@@ -521,37 +521,37 @@ async function muatDataRM() {
         return;
     }
 
-
     paparLoading(true);
-
 
     try {
 
         const bulan =
             Number(
-                document.getElementById(
-                    "bulan"
-                ).value
+                document.getElementById("bulan").value
             );
-
 
         const tahun =
             Number(
-                document.getElementById(
-                    "tahun"
-                ).value
+                document.getElementById("tahun").value
             );
 
-
         const unit =
-            profilKetuaUnit.unit;
+            (profilKetuaUnit.unit || "").trim();
+
+
+        console.log("=================================");
+        console.log("MUAT DATA KLM UNTUK RM");
+        console.log("BULAN:", bulan);
+        console.log("TAHUN:", tahun);
+        console.log("MINGGU:", mingguSemasa);
+        console.log("UNIT:", unit);
+        console.log("=================================");
 
 
         const {
             data,
             error
-        } =
-        await db
+        } = await db
             .from("KLM_Mingguan")
             .select("*")
             .eq("bulan", bulan)
@@ -565,35 +565,49 @@ async function muatDataRM() {
         }
 
 
-        dataKLM =
-            data || [];
+        dataKLM = data || [];
 
+
+        console.log(
+            "✅ DATA KLM:",
+            dataKLM.length
+        );
+
+
+        // =============================================
+        // PAPAR JADUAL
+        // =============================================
 
         paparJadual();
 
-        paparLoading(false);
+
+        // =============================================
+        // TERUS KIRA RM
+        // =============================================
+
+        if (dataKLM.length > 0) {
+
+            kiraSemuaRM();
+
+        }
 
 
     } catch (error) {
 
         console.error(
-            "RALAT MUAT KLM:",
+            "❌ RALAT MUAT DATA KLM:",
             error
         );
 
-
         dataKLM = [];
 
+        paparJadual();
 
         paparStatus(
             "❌ Gagal memuat data KLM: " +
             error.message,
             true
         );
-
-
-        paparJadual();
-
 
     } finally {
 
@@ -1105,80 +1119,60 @@ function kiraSemuaRM() {
             // 1. HARI BIASA
             //
             // hari_biasa_jam × rm_pehariklmbiasa
-            // -------------------------------------------------
+ // =========================================
+// FORMULA RM
+// =========================================
 
-            const rmHariBiasa =
-                hariBiasa *
-                kadarBiasa;
+// HARI BIASA
+// jam × kadar KLM biasa
 
-
-            // -------------------------------------------------
-            // 2. OFF < 4 JAM
-            //
-            // DIABAIKAN
-            //
-            // Tiada bayaran RM
-            // -------------------------------------------------
-
-            const rmOffKurang4 = 0;
+const rmHariBiasa =
+    hariBiasa *
+    kadarBiasa;
 
 
-            // -------------------------------------------------
-            // 3. OFF < 8 JAM
-            //
-            // off_kurang_8 × rm_perjamoffday
-            // -------------------------------------------------
+// OFF < 8 JAM
+// jam × kadar sejam OFF
 
-            const rmOffKurang8 =
-                offKurang8 *
-                kadarOffJam;
+const rmOffKurang8 =
+    offKurang8 *
+    kadarOffJam;
 
 
-            // -------------------------------------------------
-            // 4. OFF > 8 JAM
-            //
-            // off_lebih_8 × rm_perharioffday
-            // -------------------------------------------------
+// OFF > 8 JAM
+// hari × kadar harian OFF
 
-            const rmOffLebih8 =
-                offLebih8 *
-                kadarOffHari;
+const rmOffLebih8 =
+    offLebih8 *
+    kadarOffHari;
 
 
-            // -------------------------------------------------
-            // 5. CUTI AM < 8 JAM
-            //
-            // cuti_kurang_8 × rm_perjamcutiam
-            // -------------------------------------------------
+// CUTI AM < 8 JAM
+// jam × kadar sejam CUTI AM
 
-            const rmCutiKurang8 =
-                cutiKurang8 *
-                kadarCutiJam;
+const rmCutiKurang8 =
+    cutiKurang8 *
+    kadarCutiJam;
 
 
-            // -------------------------------------------------
-            // 6. CUTI AM > 8 JAM
-            //
-            // cuti_lebih_8 × rm_perharicutiam
-            // -------------------------------------------------
+// CUTI AM > 8 JAM
+// hari × kadar harian CUTI AM
 
-            const rmCutiLebih8 =
-                cutiLebih8 *
-                kadarCutiHari;
+const rmCutiLebih8 =
+    cutiLebih8 *
+    kadarCutiHari;
 
 
-            // =================================================
-            // JUMLAH KESELURUHAN RM
-            // =================================================
+// =========================================
+// JUMLAH
+// =========================================
 
-            const jumlah =
-                rmHariBiasa +
-                rmOffKurang4 +
-                rmOffKurang8 +
-                rmOffLebih8 +
-                rmCutiKurang8 +
-                rmCutiLebih8;
-
+const jumlah =
+    rmHariBiasa +
+    rmOffKurang8 +
+    rmOffLebih8 +
+    rmCutiKurang8 +
+    rmCutiLebih8;
 
             // =================================================
             // PAPAR KE JADUAL
@@ -1187,67 +1181,41 @@ function kiraSemuaRM() {
 
             // HARI BIASA
 
-            setRM(
-                tr,
-                "rm_hari_biasa",
-                rmHariBiasa
-            );
+setRM(
+    tr,
+    "rm_hari_biasa",
+    rmHariBiasa
+);
 
+setRM(
+    tr,
+    "rm_off_kurang_8",
+    rmOffKurang8
+);
 
-            // OFF < 4 JAM
-            // SENTIASA RM 0
+setRM(
+    tr,
+    "rm_off_lebih_8",
+    rmOffLebih8
+);
 
-            setRM(
-                tr,
-                "rm_off_kurang_4",
-                0
-            );
+setRM(
+    tr,
+    "rm_cuti_kurang_8",
+    rmCutiKurang8
+);
 
+setRM(
+    tr,
+    "rm_cuti_lebih_8",
+    rmCutiLebih8
+);
 
-            // OFF < 8 JAM
-
-            setRM(
-                tr,
-                "rm_off_kurang_8",
-                rmOffKurang8
-            );
-
-
-            // OFF > 8 JAM
-
-            setRM(
-                tr,
-                "rm_off_lebih_8",
-                rmOffLebih8
-            );
-
-
-            // CUTI AM < 8 JAM
-
-            setRM(
-                tr,
-                "rm_cuti_kurang_8",
-                rmCutiKurang8
-            );
-
-
-            // CUTI AM > 8 JAM
-
-            setRM(
-                tr,
-                "rm_cuti_lebih_8",
-                rmCutiLebih8
-            );
-
-
-            // JUMLAH RM
-
-            setRM(
-                tr,
-                "rm_jumlah",
-                jumlah
-            );
-
+setRM(
+    tr,
+    "rm_jumlah",
+    jumlah
+);
 
             // =================================================
             // DEBUG
@@ -2037,5 +2005,30 @@ function escapeHtml(value) {
             "'",
             "&#039;"
         );
+
+}
+
+
+// =====================================================
+// BUTANG KIRA
+// =====================================================
+
+const btnKira =
+    document.getElementById("btnKira");
+
+if (btnKira) {
+
+    btnKira.addEventListener(
+        "click",
+        () => {
+
+            console.log(
+                "🧮 BUTANG KIRA RM DITEKAN"
+            );
+
+            kiraSemuaRM();
+
+        }
+    );
 
 }
