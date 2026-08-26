@@ -141,7 +141,9 @@ function tetapkanBulanSemasa() {
 function pasangEvent() {
 
 
-    // WEEK
+    // =================================================
+    // MINGGU
+    // =================================================
 
     document
         .querySelectorAll(".week-tab")
@@ -187,12 +189,10 @@ function pasangEvent() {
                         mingguBaru;
 
 
-                    document
-                        .getElementById(
-                            "mingguSemasaText"
-                        )
-                        .textContent =
-                        mingguSemasa;
+                    setText(
+                        "mingguSemasaText",
+                        mingguSemasa
+                    );
 
 
                     await muatDataRM();
@@ -204,7 +204,9 @@ function pasangEvent() {
         });
 
 
+    // =================================================
     // BULAN
+    // =================================================
 
     const bulan =
         document.getElementById("bulan");
@@ -220,7 +222,9 @@ function pasangEvent() {
     }
 
 
+    // =================================================
     // TAHUN
+    // =================================================
 
     const tahun =
         document.getElementById("tahun");
@@ -236,41 +240,79 @@ function pasangEvent() {
     }
 
 
+    // =================================================
     // KIRA
+    // =================================================
 
-    document
-        .getElementById("btnKira")
-        ?.addEventListener(
+    const btnKira =
+        document.getElementById("btnKira");
+
+
+    if (btnKira) {
+
+        btnKira.addEventListener(
             "click",
-            kiraSemuaRM
+            () => {
+
+                console.log(
+                    "🧮 BUTANG KIRA RM DITEKAN"
+                );
+
+                kiraSemuaRM();
+
+            }
         );
 
+    }
 
+
+    // =================================================
     // SIMPAN
+    // =================================================
 
-    document
-        .getElementById("btnSimpan")
-        ?.addEventListener(
+    const btnSimpan =
+        document.getElementById("btnSimpan");
+
+
+    if (btnSimpan) {
+
+        btnSimpan.addEventListener(
             "click",
             simpanRM
         );
 
+    }
 
+
+    // =================================================
     // CSV
+    // =================================================
 
-    document
-        .getElementById("btnCSV")
-        ?.addEventListener(
+    const btnCSV =
+        document.getElementById("btnCSV");
+
+
+    if (btnCSV) {
+
+        btnCSV.addEventListener(
             "click",
             exportCSV
         );
 
+    }
 
+
+    // =================================================
     // LOGOUT
+    // =================================================
 
-    document
-        .getElementById("btnLogout")
-        ?.addEventListener(
+    const btnLogout =
+        document.getElementById("btnLogout");
+
+
+    if (btnLogout) {
+
+        btnLogout.addEventListener(
             "click",
             async () => {
 
@@ -281,6 +323,8 @@ function pasangEvent() {
 
             }
         );
+
+    }
 
 }
 
@@ -362,39 +406,47 @@ async function dapatkanPengguna() {
         }
 
 
-        profilKetuaUnit = profil;
+        profilKetuaUnit =
+            profil;
 
 
         window.ketuaUnitLogin =
             profilKetuaUnit;
 
 
+        // =================================================
         // PAPAR USER
+        // =================================================
 
         setText(
             "namaPengguna",
             profil.nama
         );
 
+
         setText(
             "namaPenggunaSidebar",
             profil.nama
         );
+
 
         setText(
             "unitPengguna",
             profil.unit
         );
 
+
         setText(
             "unitPenggunaSidebar",
             profil.unit
         );
 
+
         setText(
             "paparKetuaUnit",
             profil.nama
         );
+
 
         setText(
             "paparUnit",
@@ -428,7 +480,7 @@ async function dapatkanPengguna() {
 
 
 // =====================================================
-// MUAT ANGGOTA + KADAR
+// MUAT ANGGOTA + KADAR RM
 // =====================================================
 
 async function muatAnggota() {
@@ -512,7 +564,7 @@ async function muatAnggota() {
 
 
 // =====================================================
-// MUAT KLM
+// MUAT DATA KLM
 // =====================================================
 
 async function muatDataRM() {
@@ -521,37 +573,71 @@ async function muatDataRM() {
         return;
     }
 
+
     paparLoading(true);
+
 
     try {
 
         const bulan =
             Number(
-                document.getElementById("bulan").value
+                document.getElementById(
+                    "bulan"
+                ).value
             );
+
 
         const tahun =
             Number(
-                document.getElementById("tahun").value
+                document.getElementById(
+                    "tahun"
+                ).value
             );
 
+
         const unit =
-            (profilKetuaUnit.unit || "").trim();
+            (profilKetuaUnit.unit || "")
+                .trim();
 
 
-        console.log("=================================");
-        console.log("MUAT DATA KLM UNTUK RM");
-        console.log("BULAN:", bulan);
-        console.log("TAHUN:", tahun);
-        console.log("MINGGU:", mingguSemasa);
-        console.log("UNIT:", unit);
-        console.log("=================================");
+        console.log(
+            "================================="
+        );
+
+        console.log(
+            "MUAT DATA KLM UNTUK RM"
+        );
+
+        console.log(
+            "BULAN:",
+            bulan
+        );
+
+        console.log(
+            "TAHUN:",
+            tahun
+        );
+
+        console.log(
+            "MINGGU:",
+            mingguSemasa
+        );
+
+        console.log(
+            "UNIT:",
+            unit
+        );
+
+        console.log(
+            "================================="
+        );
 
 
         const {
             data,
             error
-        } = await db
+        } =
+        await db
             .from("KLM_Mingguan")
             .select("*")
             .eq("bulan", bulan)
@@ -565,7 +651,8 @@ async function muatDataRM() {
         }
 
 
-        dataKLM = data || [];
+        dataKLM =
+            data || [];
 
 
         console.log(
@@ -574,16 +661,16 @@ async function muatDataRM() {
         );
 
 
-        // =============================================
-        // PAPAR JADUAL
-        // =============================================
+        // =================================================
+        // PAPAR
+        // =================================================
 
         paparJadual();
 
 
-        // =============================================
-        // TERUS KIRA RM
-        // =============================================
+        // =================================================
+        // TERUS KIRA
+        // =================================================
 
         if (dataKLM.length > 0) {
 
@@ -599,15 +686,19 @@ async function muatDataRM() {
             error
         );
 
+
         dataKLM = [];
 
+
         paparJadual();
+
 
         paparStatus(
             "❌ Gagal memuat data KLM: " +
             error.message,
             true
         );
+
 
     } finally {
 
@@ -660,7 +751,9 @@ function paparJadual() {
 
 
         if (!kumpulan[pos]) {
+
             kumpulan[pos] = [];
+
         }
 
 
@@ -805,6 +898,7 @@ function paparJadual() {
 
                             </thead>
 
+
                             <tbody>
 
                                 ${senarai
@@ -839,7 +933,10 @@ function paparJadual() {
 // BINA ROW
 // =====================================================
 
-function binaRow(a, index) {
+function binaRow(
+    a,
+    index
+) {
 
     const row =
         dataKLM.find(
@@ -879,6 +976,8 @@ function binaRow(a, index) {
             </td>
 
 
+            <!-- HARI BIASA -->
+
             <td class="klm-input">
                 ${get("hari_biasa_jam").toFixed(2)}
             </td>
@@ -890,6 +989,9 @@ function binaRow(a, index) {
                 RM 0.00
             </td>
 
+
+            <!-- OFF < 4 JAM -->
+            <!-- ABAIKAN PENGIRAAN -->
 
             <td class="klm-input">
                 ${get("off_kurang_4").toFixed(2)}
@@ -903,6 +1005,8 @@ function binaRow(a, index) {
             </td>
 
 
+            <!-- OFF < 8 JAM -->
+
             <td class="klm-input">
                 ${get("off_kurang_8").toFixed(2)}
             </td>
@@ -914,6 +1018,8 @@ function binaRow(a, index) {
                 RM 0.00
             </td>
 
+
+            <!-- OFF > 8 JAM -->
 
             <td class="klm-input">
                 ${get("off_lebih_8").toFixed(2)}
@@ -927,6 +1033,8 @@ function binaRow(a, index) {
             </td>
 
 
+            <!-- CUTI AM < 8 JAM -->
+
             <td class="klm-input">
                 ${get("cuti_kurang_8").toFixed(2)}
             </td>
@@ -939,6 +1047,8 @@ function binaRow(a, index) {
             </td>
 
 
+            <!-- CUTI AM > 8 JAM -->
+
             <td class="klm-input">
                 ${get("cuti_lebih_8").toFixed(2)}
             </td>
@@ -950,6 +1060,8 @@ function binaRow(a, index) {
                 RM 0.00
             </td>
 
+
+            <!-- JUMLAH -->
 
             <td
                 class="rm-total"
@@ -979,12 +1091,9 @@ function kiraSemuaRM() {
         );
 
         return;
+
     }
 
-
-    // =================================================
-    // LOOP SETIAP ANGGOTA
-    // =================================================
 
     document
         .querySelectorAll(
@@ -992,17 +1101,18 @@ function kiraSemuaRM() {
         )
         .forEach(tr => {
 
-            // =============================================
+
+            // =================================================
             // NO SKB
-            // =============================================
+            // =================================================
 
             const noskb =
                 tr.dataset.noskb;
 
 
-            // =============================================
-            // CARI DATA ANGGOTA
-            // =============================================
+            // =================================================
+            // DATA ANGGOTA
+            // =================================================
 
             const anggotaData =
                 anggota.find(
@@ -1012,9 +1122,9 @@ function kiraSemuaRM() {
                 );
 
 
-            // =============================================
-            // CARI DATA KLM
-            // =============================================
+            // =================================================
+            // DATA KLM
+            // =================================================
 
             const klm =
                 dataKLM.find(
@@ -1032,7 +1142,7 @@ function kiraSemuaRM() {
 
 
             // =================================================
-            // KADAR RM DARIPADA Data_Anggota
+            // KADAR RM
             // =================================================
 
             const kadarBiasa =
@@ -1071,7 +1181,7 @@ function kiraSemuaRM() {
 
 
             // =================================================
-            // DATA KLM MINGGUAN
+            // DATA KLM
             // =================================================
 
             const hariBiasa =
@@ -1111,111 +1221,131 @@ function kiraSemuaRM() {
 
 
             // =================================================
-            // PENGIRAAN RM
+            // FORMULA
             // =================================================
 
 
             // -------------------------------------------------
-            // 1. HARI BIASA
-            //
-            // hari_biasa_jam × rm_pehariklmbiasa
- // =========================================
-// FORMULA RM
-// =========================================
-
-// HARI BIASA
-// jam × kadar KLM biasa
-
-const rmHariBiasa =
-    hariBiasa *
-    kadarBiasa;
-
-
-// OFF < 8 JAM
-// jam × kadar sejam OFF
-
-const rmOffKurang8 =
-    offKurang8 *
-    kadarOffJam;
-
-
-// OFF > 8 JAM
-// hari × kadar harian OFF
-
-const rmOffLebih8 =
-    offLebih8 *
-    kadarOffHari;
-
-
-// CUTI AM < 8 JAM
-// jam × kadar sejam CUTI AM
-
-const rmCutiKurang8 =
-    cutiKurang8 *
-    kadarCutiJam;
-
-
-// CUTI AM > 8 JAM
-// hari × kadar harian CUTI AM
-
-const rmCutiLebih8 =
-    cutiLebih8 *
-    kadarCutiHari;
-
-
-// =========================================
-// JUMLAH
-// =========================================
-
-const jumlah =
-    rmHariBiasa +
-    rmOffKurang8 +
-    rmOffLebih8 +
-    rmCutiKurang8 +
-    rmCutiLebih8;
-
-            // =================================================
-            // PAPAR KE JADUAL
-            // =================================================
-
-
             // HARI BIASA
+            // -------------------------------------------------
 
-setRM(
-    tr,
-    "rm_hari_biasa",
-    rmHariBiasa
-);
+            const rmHariBiasa =
+                hariBiasa *
+                kadarBiasa;
 
-setRM(
-    tr,
-    "rm_off_kurang_8",
-    rmOffKurang8
-);
 
-setRM(
-    tr,
-    "rm_off_lebih_8",
-    rmOffLebih8
-);
+            // -------------------------------------------------
+            // OFF < 4 JAM
+            // -------------------------------------------------
+            // ABAIKAN
+            // -------------------------------------------------
 
-setRM(
-    tr,
-    "rm_cuti_kurang_8",
-    rmCutiKurang8
-);
+            const rmOffKurang4 = 0;
 
-setRM(
-    tr,
-    "rm_cuti_lebih_8",
-    rmCutiLebih8
-);
 
-setRM(
-    tr,
-    "rm_jumlah",
-    jumlah
-);
+            // -------------------------------------------------
+            // OFF < 8 JAM
+            // -------------------------------------------------
+
+            const rmOffKurang8 =
+                offKurang8 *
+                kadarOffJam;
+
+
+            // -------------------------------------------------
+            // OFF > 8 JAM
+            // -------------------------------------------------
+
+            const rmOffLebih8 =
+                offLebih8 *
+                kadarOffHari;
+
+
+            // -------------------------------------------------
+            // CUTI AM < 8 JAM
+            // -------------------------------------------------
+
+            const rmCutiKurang8 =
+                cutiKurang8 *
+                kadarCutiJam;
+
+
+            // -------------------------------------------------
+            // CUTI AM > 8 JAM
+            // -------------------------------------------------
+
+            const rmCutiLebih8 =
+                cutiLebih8 *
+                kadarCutiHari;
+
+
+            // =================================================
+            // JUMLAH RM
+            // =================================================
+
+            const jumlah =
+                rmHariBiasa +
+                rmOffKurang4 +
+                rmOffKurang8 +
+                rmOffLebih8 +
+                rmCutiKurang8 +
+                rmCutiLebih8;
+
+
+            // =================================================
+            // PAPAR
+            // =================================================
+
+            setRM(
+                tr,
+                "rm_hari_biasa",
+                rmHariBiasa
+            );
+
+
+            // OFF < 4 JAM = RM 0
+
+            setRM(
+                tr,
+                "rm_off_kurang_4",
+                0
+            );
+
+
+            setRM(
+                tr,
+                "rm_off_kurang_8",
+                rmOffKurang8
+            );
+
+
+            setRM(
+                tr,
+                "rm_off_lebih_8",
+                rmOffLebih8
+            );
+
+
+            setRM(
+                tr,
+                "rm_cuti_kurang_8",
+                rmCutiKurang8
+            );
+
+
+            setRM(
+                tr,
+                "rm_cuti_lebih_8",
+                rmCutiLebih8
+            );
+
+
+            setRM(
+                tr,
+                "rm_jumlah",
+                jumlah
+            );
+
 
             // =================================================
             // DEBUG
@@ -1339,15 +1469,12 @@ setRM(
         });
 
 
-    // =================================================
-    // STATUS
-    // =================================================
-
     paparStatus(
         "✅ Pengiraan RM berjaya dilakukan."
     );
 
 }
+
 
 // =====================================================
 // SET RM
@@ -1368,13 +1495,17 @@ function setRM(
     if (!element) return;
 
 
+    const nilai =
+        Number(value) || 0;
+
+
     element.dataset.value =
-        Number(value).toFixed(2);
+        nilai.toFixed(2);
 
 
     element.textContent =
         "RM " +
-        Number(value).toFixed(2);
+        nilai.toFixed(2);
 
 }
 
@@ -1403,15 +1534,21 @@ async function simpanRM() {
         );
 
 
-    btn.disabled = true;
+    if (btn) {
 
-    btn.textContent =
-        "⏳ MENYIMPAN...";
+        btn.disabled = true;
+
+        btn.textContent =
+            "⏳ MENYIMPAN...";
+
+    }
 
 
     try {
 
-        // Pastikan kira dahulu
+        // =================================================
+        // KIRA DAHULU
+        // =================================================
 
         kiraSemuaRM();
 
@@ -1424,6 +1561,7 @@ async function simpanRM() {
                 ".klm-table tbody tr"
             )
             .forEach(tr => {
+
 
                 const noskb =
                     tr.dataset.noskb;
@@ -1438,7 +1576,9 @@ async function simpanRM() {
 
 
                 if (!original) {
+
                     return;
+
                 }
 
 
@@ -1471,23 +1611,50 @@ async function simpanRM() {
                     nama:
                         original.nama,
 
+
+                    // =================================================
+                    // DATA KLM
+                    // =================================================
+
                     hari_biasa_jam:
-                        original.hari_biasa_jam || 0,
+                        Number(
+                            original.hari_biasa_jam || 0
+                        ),
+
 
                     off_kurang_4:
-                        original.off_kurang_4 || 0,
+                        Number(
+                            original.off_kurang_4 || 0
+                        ),
+
 
                     off_kurang_8:
-                        original.off_kurang_8 || 0,
+                        Number(
+                            original.off_kurang_8 || 0
+                        ),
+
 
                     off_lebih_8:
-                        original.off_lebih_8 || 0,
+                        Number(
+                            original.off_lebih_8 || 0
+                        ),
+
 
                     cuti_kurang_8:
-                        original.cuti_kurang_8 || 0,
+                        Number(
+                            original.cuti_kurang_8 || 0
+                        ),
+
 
                     cuti_lebih_8:
-                        original.cuti_lebih_8 || 0,
+                        Number(
+                            original.cuti_lebih_8 || 0
+                        ),
+
+
+                    // =================================================
+                    // RM
+                    // =================================================
 
                     rm_hari_biasa:
                         getRM(
@@ -1495,11 +1662,12 @@ async function simpanRM() {
                             "rm_hari_biasa"
                         ),
 
+
+                    // OFF < 4 = 0
+
                     rm_off_kurang_4:
-                        getRM(
-                            tr,
-                            "rm_off_kurang_4"
-                        ),
+                        0,
+
 
                     rm_off_kurang_8:
                         getRM(
@@ -1507,11 +1675,13 @@ async function simpanRM() {
                             "rm_off_kurang_8"
                         ),
 
+
                     rm_off_lebih_8:
                         getRM(
                             tr,
                             "rm_off_lebih_8"
                         ),
+
 
                     rm_cuti_kurang_8:
                         getRM(
@@ -1519,17 +1689,20 @@ async function simpanRM() {
                             "rm_cuti_kurang_8"
                         ),
 
+
                     rm_cuti_lebih_8:
                         getRM(
                             tr,
                             "rm_cuti_lebih_8"
                         ),
 
+
                     rm_jumlah:
                         getRM(
                             tr,
                             "rm_jumlah"
                         ),
+
 
                     updated_at:
                         new Date()
@@ -1539,6 +1712,25 @@ async function simpanRM() {
 
             });
 
+
+        if (!rows.length) {
+
+            throw new Error(
+                "Tiada rekod untuk disimpan."
+            );
+
+        }
+
+
+        console.log(
+            "ROWS SIMPAN RM:",
+            rows
+        );
+
+
+        // =================================================
+        // UPSERT KE KLM_Mingguan
+        // =================================================
 
         const {
             error
@@ -1555,7 +1747,9 @@ async function simpanRM() {
 
 
         if (error) {
+
             throw error;
+
         }
 
 
@@ -1564,19 +1758,23 @@ async function simpanRM() {
         );
 
 
-        btn.textContent =
-            "✅ BERJAYA DISIMPAN";
+        if (btn) {
+
+            btn.textContent =
+                "✅ BERJAYA DISIMPAN";
 
 
-        setTimeout(
-            () => {
+            setTimeout(
+                () => {
 
-                btn.textContent =
-                    "💾 SIMPAN RM";
+                    btn.textContent =
+                        "💾 SIMPAN RM";
 
-            },
-            2000
-        );
+                },
+                2000
+            );
+
+        }
 
 
     } catch (error) {
@@ -1594,13 +1792,21 @@ async function simpanRM() {
         );
 
 
-        btn.textContent =
-            "❌ GAGAL SIMPAN";
+        if (btn) {
+
+            btn.textContent =
+                "❌ GAGAL SIMPAN";
+
+        }
 
 
     } finally {
 
-        btn.disabled = false;
+        if (btn) {
+
+            btn.disabled = false;
+
+        }
 
     }
 
@@ -1623,7 +1829,9 @@ function getRM(
 
 
     if (!element) {
+
         return 0;
+
     }
 
 
@@ -1635,7 +1843,7 @@ function getRM(
 
 
 // =====================================================
-// CSV
+// EXPORT CSV
 // =====================================================
 
 function exportCSV() {
@@ -1652,37 +1860,62 @@ function exportCSV() {
     }
 
 
+    // =================================================
+    // KIRA TERLEBIH DAHULU
+    // =================================================
+
     kiraSemuaRM();
 
 
     const rows = [];
 
 
+    // =================================================
+    // HEADER CSV
+    // =================================================
+
     rows.push([
 
         "BIL",
+
         "NO SKB",
+
         "NO ANGGOTA",
+
         "NAMA",
+
         "POS",
 
+
         "HARI BIASA JAM",
+
         "HARI BIASA RM",
 
+
         "OFF < 4 JAM",
+
         "OFF < 4 RM",
 
+
         "OFF < 8 JAM",
+
         "OFF < 8 RM",
 
+
         "OFF > 8 JAM",
+
         "OFF > 8 RM",
 
+
         "CUTI AM < 8 JAM",
+
         "CUTI AM < 8 RM",
 
+
         "CUTI AM > 8 JAM",
+
         "CUTI AM > 8 RM",
+
 
         "JUMLAH RM"
 
@@ -1692,7 +1925,12 @@ function exportCSV() {
     let bil = 1;
 
 
+    // =================================================
+    // DATA
+    // =================================================
+
     anggota.forEach(a => {
+
 
         const klm =
             dataKLM.find(
@@ -1702,7 +1940,11 @@ function exportCSV() {
             );
 
 
-        if (!klm) return;
+        if (!klm) {
+
+            return;
+
+        }
 
 
         const tr =
@@ -1711,7 +1953,11 @@ function exportCSV() {
             );
 
 
-        if (!tr) return;
+        if (!tr) {
+
+            return;
+
+        }
 
 
         rows.push([
@@ -1726,6 +1972,9 @@ function exportCSV() {
 
             a.poskhidmat,
 
+
+            // HARI BIASA
+
             klm.hari_biasa_jam || 0,
 
             getRM(
@@ -1733,12 +1982,15 @@ function exportCSV() {
                 "rm_hari_biasa"
             ),
 
+
+            // OFF < 4
+
             klm.off_kurang_4 || 0,
 
-            getRM(
-                tr,
-                "rm_off_kurang_4"
-            ),
+            0,
+
+
+            // OFF < 8
 
             klm.off_kurang_8 || 0,
 
@@ -1747,12 +1999,18 @@ function exportCSV() {
                 "rm_off_kurang_8"
             ),
 
+
+            // OFF > 8
+
             klm.off_lebih_8 || 0,
 
             getRM(
                 tr,
                 "rm_off_lebih_8"
             ),
+
+
+            // CUTI < 8
 
             klm.cuti_kurang_8 || 0,
 
@@ -1761,12 +2019,18 @@ function exportCSV() {
                 "rm_cuti_kurang_8"
             ),
 
+
+            // CUTI > 8
+
             klm.cuti_lebih_8 || 0,
 
             getRM(
                 tr,
                 "rm_cuti_lebih_8"
             ),
+
+
+            // JUMLAH
 
             getRM(
                 tr,
@@ -1777,6 +2041,10 @@ function exportCSV() {
 
     });
 
+
+    // =================================================
+    // BINA CSV
+    // =================================================
 
     const csv =
         rows
@@ -1821,21 +2089,30 @@ function exportCSV() {
         ).value;
 
 
-    link.href = url;
+    link.href =
+        url;
 
 
     link.download =
         `KLM_RM_${bulan}_${tahun}_${mingguSemasa.replaceAll(" ", "_")}.csv`;
 
 
-    document.body.appendChild(link);
+    document.body.appendChild(
+        link
+    );
+
 
     link.click();
 
-    document.body.removeChild(link);
+
+    document.body.removeChild(
+        link
+    );
 
 
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(
+        url
+    );
 
 
     paparStatus(
@@ -1858,7 +2135,8 @@ function csvEscape(value) {
     if (
         text.includes(",") ||
         text.includes('"') ||
-        text.includes("\n")
+        text.includes("\n") ||
+        text.includes("\r")
     ) {
 
         return '"' +
@@ -1931,7 +2209,9 @@ function paparStatus(
 // LOADING
 // =====================================================
 
-function paparLoading(show) {
+function paparLoading(
+    show
+) {
 
     const box =
         document.getElementById(
@@ -1960,7 +2240,9 @@ function setText(
 ) {
 
     const element =
-        document.getElementById(id);
+        document.getElementById(
+            id
+        );
 
 
     if (element) {
@@ -1977,9 +2259,13 @@ function setText(
 // ESCAPE HTML
 // =====================================================
 
-function escapeHtml(value) {
+function escapeHtml(
+    value
+) {
 
-    return String(value ?? "")
+    return String(
+        value ?? ""
+    )
 
         .replaceAll(
             "&",
@@ -2009,26 +2295,42 @@ function escapeHtml(value) {
 }
 
 
-// =====================================================
-// BUTANG KIRA
-// =====================================================
+console.log(
+    "================================="
+);
 
-const btnKira =
-    document.getElementById("btnKira");
+console.log(
+    "KLM RM JS FULLY LOADED"
+);
 
-if (btnKira) {
+console.log(
+    "FORMULA:"
+);
 
-    btnKira.addEventListener(
-        "click",
-        () => {
+console.log(
+    "HARI BIASA = JAM × KADAR BIASA"
+);
 
-            console.log(
-                "🧮 BUTANG KIRA RM DITEKAN"
-            );
+console.log(
+    "OFF < 4 JAM = ABAIKAN"
+);
 
-            kiraSemuaRM();
+console.log(
+    "OFF < 8 JAM = JAM × KADAR OFF"
+);
 
-        }
-    );
+console.log(
+    "OFF > 8 JAM = HARI × KADAR OFF"
+);
 
-}
+console.log(
+    "CUTI AM < 8 JAM = JAM × KADAR CUTI"
+);
+
+console.log(
+    "CUTI AM > 8 JAM = HARI × KADAR CUTI"
+);
+
+console.log(
+    "================================="
+);
