@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ms">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>KLM RM</title>
+
+    <link
+        rel="stylesheet"
+        href="klm-rm.css?v=20260826-01"
+    >
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="supabase-config.js?v=20260826"></script>
+    <script src="auth-guard.js?v=20260826"></script>
+
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-logo">
+                FPB
+            </div>
+
+            <div>
+
+                <div class="brand-title">
+                    KLM RM
+                </div>
+
+                <div class="brand-subtitle">
+                    Pengurusan Ketua Unit
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <nav class="menu">
+
+            <a
+                href="dashboard.html"
+                class="menu-item"
+            >
+                <span>🏠</span>
+                <span>Dashboard</span>
+            </a>
+
+
+            <a
+                href="klm-mingguan.html"
+                class="menu-item"
+            >
+                <span>📋</span>
+                <span>KLM Mingguan</span>
+            </a>
+
+
+            <a
+                href="klm-rm.html"
+                class="menu-item active"
+            >
+                <span>💰</span>
+                <span>KLM RM</span>
+            </a>
+
+        </nav>
+
+
+        <div class="sidebar-footer">
+
+            <div class="login-label">
+                LOG MASUK
+            </div>
+
+            <div id="namaPenggunaSidebar">
+                -
+            </div>
+
+            <div id="unitPenggunaSidebar">
+                -
+            </div>
+
+
+            <button
+                id="btnLogout"
+                class="logout-btn"
+            >
+                🚪 Log Keluar
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div>
+
+                <h1>
+                    KLM RM
+                </h1>
+
+                <p>
+                    Pengiraan bayaran KLM mengikut minggu dan pos
+                </p>
+
+            </div>
+
+
+            <div class="user-info">
+
+                <div class="user-avatar">
+                    👤
+                </div>
+
+                <div>
+
+                    <strong id="namaPengguna">
+                        -
+                    </strong>
+
+                    <small id="unitPengguna">
+                        -
+                    </small>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <section class="content">
+
+            <!-- HERO -->
+
+            <div class="hero">
+
+                <div>
+
+                    <div class="hero-label">
+                        KLM RM
+                    </div>
+
+                    <h2>
+                        Pengiraan RM KLM
+                    </h2>
+
+                    <p>
+                        Kiraan bayaran berdasarkan rekod KLM Mingguan.
+                    </p>
+
+                </div>
+
+
+                <div class="hero-icon">
+                    💰
+                </div>
+
+            </div>
+
+
+            <!-- FILTER -->
+
+            <div class="card filter-card">
+
+                <div class="card-title">
+
+                    <span>⚙️</span>
+
+                    Tetapan KLM RM
+
+                </div>
+
+
+                <div class="filter-grid">
+
+                    <div class="form-group">
+
+                        <label for="bulan">
+                            BULAN
+                        </label>
+
+                        <select id="bulan">
+
+                            <option value="1">JANUARI</option>
+                            <option value="2">FEBRUARI</option>
+                            <option value="3">MAC</option>
+                            <option value="4">APRIL</option>
+                            <option value="5">MEI</option>
+                            <option value="6">JUN</option>
+                            <option value="7">JULAI</option>
+                            <option value="8">OGOS</option>
+                            <option value="9">SEPTEMBER</option>
+                            <option value="10">OKTOBER</option>
+                            <option value="11">NOVEMBER</option>
+                            <option value="12">DISEMBER</option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="tahun">
+                            TAHUN
+                        </label>
+
+                        <select id="tahun"></select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            KETUA UNIT
+                        </label>
+
+                        <div
+                            class="readonly-box"
+                            id="paparKetuaUnit"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            UNIT
+                        </label>
+
+                        <div
+                            class="readonly-box"
+                            id="paparUnit"
+                        >
+                            -
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- WEEK -->
+
+            <div class="week-tabs">
+
+                <button
+                    class="week-tab active"
+                    data-minggu="MINGGU 1"
+                >
+
+                    <span>
+                        MINGGU 1
+                    </span>
+
+                    <small>
+                        Hari 1 – 7
+                    </small>
+
+                </button>
+
+
+                <button
+                    class="week-tab"
+                    data-minggu="MINGGU 2"
+                >
+
+                    <span>
+                        MINGGU 2
+                    </span>
+
+                    <small>
+                        Hari 8 – 14
+                    </small>
+
+                </button>
+
+
+                <button
+                    class="week-tab"
+                    data-minggu="MINGGU 3"
+                >
+
+                    <span>
+                        MINGGU 3
+                    </span>
+
+                    <small>
+                        Hari 15 – 21
+                    </small>
+
+                </button>
+
+
+                <button
+                    class="week-tab"
+                    data-minggu="MINGGU 4/5"
+                >
+
+                    <span>
+                        MINGGU 4/5
+                    </span>
+
+                    <small>
+                        Hari 22 – Akhir Bulan
+                    </small>
+
+                </button>
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            <div
+                id="statusBox"
+                class="status-box hidden"
+            >
+                -
+            </div>
+
+
+            <!-- LOADING -->
+
+            <div
+                id="loadingBox"
+                class="loading-box hidden"
+            >
+
+                <div class="spinner"></div>
+
+                <div>
+                    Mengira RM...
+                </div>
+
+            </div>
+
+
+            <!-- TABLE -->
+
+            <div id="senaraiPos"></div>
+
+
+            <!-- ACTION -->
+
+            <div class="bottom-action">
+
+                <div>
+
+                    <strong id="mingguSemasaText">
+                        MINGGU 1
+                    </strong>
+
+                    <span>
+                        Kiraan RM berdasarkan data KLM minggu dipilih.
+                    </span>
+
+                </div>
+
+
+                <div class="action-buttons">
+
+                    <button
+                        id="btnKira"
+                        class="btn-calculate"
+                    >
+                        🧮 KIRA RM
+                    </button>
+
+
+                    <button
+                        id="btnSimpan"
+                        class="btn-save"
+                    >
+                        💾 SIMPAN RM
+                    </button>
+
+
+                    <button
+                        id="btnCSV"
+                        class="btn-csv"
+                    >
+                        📥 SAVE CSV
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script src="klm-rm.js?v=20260826-01"></script>
+
+</body>
+
+</html>
