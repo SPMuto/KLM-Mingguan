@@ -1249,7 +1249,7 @@ function kiraSemuaRM() {
 
             const rmOffKurang8 =
                 offKurang8 *
-                kadarOffJam;
+                kadarOffHari;
 
 
             // -------------------------------------------------
@@ -1258,7 +1258,7 @@ function kiraSemuaRM() {
 
             const rmOffLebih8 =
                 offLebih8 *
-                kadarOffHari;
+                kadarOffJam;
 
 
             // -------------------------------------------------
@@ -1267,7 +1267,7 @@ function kiraSemuaRM() {
 
             const rmCutiKurang8 =
                 cutiKurang8 *
-                kadarCutiJam;
+                kadarCutiHari;
 
 
             // -------------------------------------------------
@@ -1276,7 +1276,7 @@ function kiraSemuaRM() {
 
             const rmCutiLebih8 =
                 cutiLebih8 *
-                kadarCutiHari;
+                kadarCutiJam;
 
 
             // =================================================
