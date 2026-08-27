@@ -855,7 +855,7 @@ function paparJadual() {
                                     </th>
 
                                     <th>
-                                        UNIT
+                                        JAM
                                     </th>
 
                                     <th>
@@ -863,7 +863,7 @@ function paparJadual() {
                                     </th>
 
                                     <th>
-                                        UNIT
+                                        JAM
                                     </th>
 
                                     <th>
@@ -871,7 +871,7 @@ function paparJadual() {
                                     </th>
 
                                     <th>
-                                        UNIT
+                                        JAM
                                     </th>
 
                                     <th>
@@ -879,7 +879,7 @@ function paparJadual() {
                                     </th>
 
                                     <th>
-                                        UNIT
+                                        JAM
                                     </th>
 
                                     <th>
@@ -887,7 +887,7 @@ function paparJadual() {
                                     </th>
 
                                     <th>
-                                        UNIT
+                                        JAM
                                     </th>
 
                                     <th>
