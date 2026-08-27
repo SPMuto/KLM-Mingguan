@@ -1421,7 +1421,7 @@ function kiraSemuaRM() {
                 "OFF < 8 JAM:",
                 offKurang8,
                 "×",
-                kadarOffJam,
+                kadarOffHari,
                 "=",
                 rmOffKurang8
             );
@@ -1430,7 +1430,7 @@ function kiraSemuaRM() {
                 "OFF > 8 JAM:",
                 offLebih8,
                 "×",
-                kadarOffHari,
+                kadarOffJam,
                 "=",
                 rmOffLebih8
             );
@@ -1439,7 +1439,7 @@ function kiraSemuaRM() {
                 "CUTI AM < 8 JAM:",
                 cutiKurang8,
                 "×",
-                kadarCutiJam,
+                kadarCutiHari,
                 "=",
                 rmCutiKurang8
             );
@@ -1448,7 +1448,7 @@ function kiraSemuaRM() {
                 "CUTI AM > 8 JAM:",
                 cutiLebih8,
                 "×",
-                kadarCutiHari,
+                kadarCutiJam,
                 "=",
                 rmCutiLebih8
             );
