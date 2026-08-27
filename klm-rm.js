@@ -979,7 +979,7 @@ function binaRow(
             <!-- HARI BIASA -->
 
             <td class="klm-input">
-                ${get("hari_biasa_jam").toFixed(2)}
+                ${get("hari_biasa_jam")}
             </td>
 
             <td
@@ -994,7 +994,7 @@ function binaRow(
             <!-- ABAIKAN PENGIRAAN -->
 
             <td class="klm-input">
-                ${get("off_kurang_4").toFixed(2)}
+                ${get("off_kurang_4")}
             </td>
 
             <td
@@ -1008,7 +1008,7 @@ function binaRow(
             <!-- OFF < 8 JAM -->
 
             <td class="klm-input">
-                ${get("off_kurang_8").toFixed(2)}
+                ${get("off_kurang_8")}
             </td>
 
             <td
@@ -1022,7 +1022,7 @@ function binaRow(
             <!-- OFF > 8 JAM -->
 
             <td class="klm-input">
-                ${get("off_lebih_8").toFixed(2)}
+                ${get("off_lebih_8")}
             </td>
 
             <td
@@ -1036,7 +1036,7 @@ function binaRow(
             <!-- CUTI AM < 8 JAM -->
 
             <td class="klm-input">
-                ${get("cuti_kurang_8").toFixed(2)}
+                ${get("cuti_kurang_8")}
             </td>
 
             <td
@@ -1050,7 +1050,7 @@ function binaRow(
             <!-- CUTI AM > 8 JAM -->
 
             <td class="klm-input">
-                ${get("cuti_lebih_8").toFixed(2)}
+                ${get("cuti_lebih_8")}
             </td>
 
             <td
