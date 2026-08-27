@@ -953,7 +953,7 @@ function binaRow(
             );
 
 
-    return 
+    return `
 
         <tr
             data-noskb="${escapeHtml(a.noskb)}"
@@ -1072,7 +1072,7 @@ function binaRow(
 
         </tr>
 
-    ;
+   ` ;
 
 }
 
