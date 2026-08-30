@@ -2039,41 +2039,9 @@ function binaJadualJamKeseluruhan(
             // KIRA JUMLAH JAM UNTUK SATU REKOD
             // =========================================
 
-            const jamKLM =
-                num(
-                    row.hari_biasa_jam
-                )
-
-                +
-
-                num(
-                    row.off_kurang_4
-                )
-
-                +
-
-                num(
-                    row.off_kurang_8
-                )
-
-                +
-
-                num(
-                    row.off_lebih_8
-                )
-
-                +
-
-                num(
-                    row.cuti_kurang_8
-                )
-
-                +
-
-                num(
-                    row.cuti_lebih_8
-                );
-
+const jamKLM =
+    num(row.hari_biasa_jam);
+               
 
             // =========================================
             // MASUKKAN IKUT MINGGU
