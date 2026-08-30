@@ -302,7 +302,7 @@
 
     <button
         id="btnJamKeseluruhan"
-        class="btn-save">
+        class="btn-jam-keseluruhan">
 
         📊 JAM KLM KESELURUHAN
 
@@ -326,7 +326,90 @@
     </main>
 
 </div>
+<!-- ========================================= -->
+<!-- POPUP JAM KLM KESELURUHAN -->
+<!-- ========================================= -->
 
+<div
+    id="modalJamKLM"
+    class="modal-jam hidden">
+
+    <div class="modal-jam-box">
+
+
+        <!-- HEADER -->
+
+        <div class="modal-jam-header">
+
+            <div>
+
+                <div class="modal-jam-title">
+                    📊 JAM KLM KESELURUHAN
+                </div>
+
+                <div
+                    id="modalJamInfo"
+                    class="modal-jam-subtitle">
+
+                    -
+
+                </div>
+
+            </div>
+
+
+            <button
+                id="btnTutupJamKLM"
+                class="modal-close">
+
+                ✕
+            </button>
+
+        </div>
+
+
+        <!-- LOADING -->
+
+        <div
+            id="loadingJamKLM"
+            class="loading-box hidden">
+
+            <div class="spinner"></div>
+
+            <div>
+                Mengira JAM KLM keseluruhan...
+            </div>
+
+        </div>
+
+
+        <!-- CONTENT -->
+
+        <div
+            id="modalJamContent"
+            class="modal-jam-content">
+
+        </div>
+
+
+        <!-- FOOTER -->
+
+        <div class="modal-jam-footer">
+
+            <button
+                id="btnTutupJamKLMFooter"
+                class="btn-modal-close">
+
+                TUTUP
+
+            </button>
+
+        </div>
+
+
+    </div>
+
+</div>
 
 <script src="klm-mingguan.js?v=20260824-02"></script>
 
