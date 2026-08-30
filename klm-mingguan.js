@@ -195,6 +195,61 @@ function pasangEvent() {
 
                 mingguSemasa = mingguBaru;
 
+
+                    // =============================================
+    // JAM KLM KESELURUHAN
+    // =============================================
+
+    const btnJamKeseluruhan =
+        document.getElementById(
+            "btnJamKeseluruhan"
+        );
+
+
+    if (btnJamKeseluruhan) {
+
+        btnJamKeseluruhan.addEventListener(
+            "click",
+            paparJamKeseluruhan
+        );
+
+    }
+
+
+    // =============================================
+    // TUTUP MODAL JAM
+    // =============================================
+
+    const btnTutupJamKLM =
+        document.getElementById(
+            "btnTutupJamKLM"
+        );
+
+
+    if (btnTutupJamKLM) {
+
+        btnTutupJamKLM.addEventListener(
+            "click",
+            tutupModalJamKLM
+        );
+
+    }
+
+
+    const btnTutupJamKLMFooter =
+        document.getElementById(
+            "btnTutupJamKLMFooter"
+        );
+
+
+    if (btnTutupJamKLMFooter) {
+
+        btnTutupJamKLMFooter.addEventListener(
+            "click",
+            tutupModalJamKLM
+        );
+
+    }
                 // =============================================
                 // PAPAR MINGGU
                 // =============================================
@@ -1632,6 +1687,809 @@ async function simpanMinggu() {
 
 
 // =====================================================
+// PAPAR JAM KLM KESELURUHAN
+// MINGGU 1 + MINGGU 2 + MINGGU 3 + MINGGU 4/5
+// =====================================================
+
+async function paparJamKeseluruhan() {
+
+    if (!profilKetuaUnit) {
+
+        paparStatus(
+            "❌ Profil Ketua Unit tidak dijumpai.",
+            true
+        );
+
+        return;
+
+    }
+
+
+    const bulan =
+        Number(
+            document.getElementById(
+                "bulan"
+            ).value
+        );
+
+
+    const tahun =
+        Number(
+            document.getElementById(
+                "tahun"
+            ).value
+        );
+
+
+    const unit =
+        (
+            profilKetuaUnit.unit ||
+            ""
+        ).trim();
+
+
+    const modal =
+        document.getElementById(
+            "modalJamKLM"
+        );
+
+
+    const content =
+        document.getElementById(
+            "modalJamContent"
+        );
+
+
+    const loading =
+        document.getElementById(
+            "loadingJamKLM"
+        );
+
+
+    if (!modal || !content) {
+
+        console.error(
+            "Modal JAM KLM tidak dijumpai."
+        );
+
+        return;
+
+    }
+
+
+    modal.classList.remove(
+        "hidden"
+    );
+
+
+    content.innerHTML = "";
+
+
+    if (loading) {
+
+        loading.classList.remove(
+            "hidden"
+        );
+
+    }
+
+
+    const namaBulan = [
+
+        "",
+        "JANUARI",
+        "FEBRUARI",
+        "MAC",
+        "APRIL",
+        "MEI",
+        "JUN",
+        "JULAI",
+        "OGOS",
+        "SEPTEMBER",
+        "OKTOBER",
+        "NOVEMBER",
+        "DISEMBER"
+
+    ];
+
+
+    const info =
+        document.getElementById(
+            "modalJamInfo"
+        );
+
+
+    if (info) {
+
+        info.textContent =
+            `${namaBulan[bulan]} ${tahun} · ${unit}`;
+
+    }
+
+
+    try {
+
+        console.log(
+            "================================="
+        );
+
+        console.log(
+            "📊 MUAT JAM KLM KESELURUHAN"
+        );
+
+        console.log(
+            "BULAN:",
+            bulan
+        );
+
+        console.log(
+            "TAHUN:",
+            tahun
+        );
+
+        console.log(
+            "UNIT:",
+            unit
+        );
+
+        console.log(
+            "================================="
+        );
+
+
+        const {
+            data,
+            error
+        } =
+        await db
+            .from(
+                "KLM_Mingguan"
+            )
+            .select(`
+                minggu,
+                noskb,
+                noanggota,
+                nama,
+                hari_biasa_jam,
+                off_kurang_4,
+                off_kurang_8,
+                off_lebih_8,
+                cuti_kurang_8,
+                cuti_lebih_8
+            `)
+            .eq(
+                "bulan",
+                bulan
+            )
+            .eq(
+                "tahun",
+                tahun
+            )
+            .eq(
+                "unit",
+                unit
+            )
+            .in(
+                "minggu",
+                [
+                    "MINGGU 1",
+                    "MINGGU 2",
+                    "MINGGU 3",
+                    "MINGGU 4/5"
+                ]
+            );
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        console.log(
+            "DATA SEMUA MINGGU:",
+            data
+        );
+
+
+        binaJadualJamKeseluruhan(
+            data || []
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "❌ RALAT JAM KESELURUHAN:",
+            error
+        );
+
+
+        content.innerHTML = `
+
+            <div class="card">
+
+                <strong>
+                    ❌ Gagal memuatkan data JAM KLM
+                </strong>
+
+                <p>
+                    ${escapeHtml(
+                        error.message
+                    )}
+                </p>
+
+            </div>
+
+        `;
+
+    } finally {
+
+        if (loading) {
+
+            loading.classList.add(
+                "hidden"
+            );
+
+        }
+
+    }
+
+}
+
+// =====================================================
+// BINA JADUAL JAM KLM KESELURUHAN
+// =====================================================
+
+function binaJadualJamKeseluruhan(
+    data
+) {
+
+    const content =
+        document.getElementById(
+            "modalJamContent"
+        );
+
+
+    if (!content) {
+
+        return;
+
+    }
+
+
+    if (!data.length) {
+
+        content.innerHTML = `
+
+            <div class="card">
+
+                <strong>
+                    📊 Tiada data KLM
+                </strong>
+
+                <p>
+                    Tiada rekod untuk MINGGU 1,
+                    MINGGU 2, MINGGU 3
+                    dan MINGGU 4/5.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    // =============================================
+    // KUMPUL IKUT NO SKB
+    // =============================================
+
+    const anggotaMap = {};
+
+
+    data.forEach(
+        row => {
+
+            const key =
+                String(
+                    row.noskb || ""
+                ).trim();
+
+
+            if (!key) {
+
+                return;
+
+            }
+
+
+            if (!anggotaMap[key]) {
+
+                anggotaMap[key] = {
+
+                    noskb:
+                        row.noskb || "",
+
+                    noanggota:
+                        row.noanggota || "",
+
+                    nama:
+                        row.nama || "",
+
+                    minggu1: 0,
+
+                    minggu2: 0,
+
+                    minggu3: 0,
+
+                    minggu45: 0,
+
+                    jumlah: 0
+
+                };
+
+            }
+
+
+            // =========================================
+            // KIRA JUMLAH JAM UNTUK SATU REKOD
+            // =========================================
+
+            const jamKLM =
+                num(
+                    row.hari_biasa_jam
+                )
+
+                +
+
+                num(
+                    row.off_kurang_4
+                )
+
+                +
+
+                num(
+                    row.off_kurang_8
+                )
+
+                +
+
+                num(
+                    row.off_lebih_8
+                )
+
+                +
+
+                num(
+                    row.cuti_kurang_8
+                )
+
+                +
+
+                num(
+                    row.cuti_lebih_8
+                );
+
+
+            // =========================================
+            // MASUKKAN IKUT MINGGU
+            // =========================================
+
+            switch (
+                row.minggu
+            ) {
+
+                case "MINGGU 1":
+
+                    anggotaMap[key]
+                        .minggu1 +=
+                        jamKLM;
+
+                    break;
+
+
+                case "MINGGU 2":
+
+                    anggotaMap[key]
+                        .minggu2 +=
+                        jamKLM;
+
+                    break;
+
+
+                case "MINGGU 3":
+
+                    anggotaMap[key]
+                        .minggu3 +=
+                        jamKLM;
+
+                    break;
+
+
+                case "MINGGU 4/5":
+
+                    anggotaMap[key]
+                        .minggu45 +=
+                        jamKLM;
+
+                    break;
+
+            }
+
+
+            anggotaMap[key]
+                .jumlah +=
+                jamKLM;
+
+        }
+    );
+
+
+    const senarai =
+        Object
+            .values(
+                anggotaMap
+            )
+            .sort(
+                (
+                    a,
+                    b
+                ) =>
+                    String(
+                        a.nama
+                    )
+                    .localeCompare(
+                        String(
+                            b.nama
+                        ),
+                        "ms"
+                    )
+            );
+
+
+    // =============================================
+    // KIRA GRAND TOTAL
+    // =============================================
+
+    let totalMinggu1 = 0;
+
+    let totalMinggu2 = 0;
+
+    let totalMinggu3 = 0;
+
+    let totalMinggu45 = 0;
+
+    let totalKeseluruhan = 0;
+
+
+    senarai.forEach(
+        a => {
+
+            totalMinggu1 +=
+                a.minggu1;
+
+            totalMinggu2 +=
+                a.minggu2;
+
+            totalMinggu3 +=
+                a.minggu3;
+
+            totalMinggu45 +=
+                a.minggu45;
+
+            totalKeseluruhan +=
+                a.jumlah;
+
+        }
+    );
+
+
+    // =============================================
+    // PAPAR JADUAL
+    // =============================================
+
+    content.innerHTML = `
+
+        <div class="table-wrapper">
+
+            <table class="jam-klm-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            BIL
+                        </th>
+
+                        <th>
+                            NO SKB
+                        </th>
+
+                        <th>
+                            NO ANGGOTA
+                        </th>
+
+                        <th class="nama-cell">
+                            NAMA ANGGOTA
+                        </th>
+
+                        <th>
+                            MINGGU 1
+                        </th>
+
+                        <th>
+                            MINGGU 2
+                        </th>
+
+                        <th>
+                            MINGGU 3
+                        </th>
+
+                        <th>
+                            MINGGU 4/5
+                        </th>
+
+                        <th>
+                            JUMLAH JAM
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    ${senarai
+                        .map(
+                            (
+                                a,
+                                index
+                            ) => `
+
+                                <tr>
+
+                                    <td>
+                                        ${index + 1}
+                                    </td>
+
+
+                                    <td>
+
+                                        ${escapeHtml(
+                                            a.noskb
+                                        )}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        ${escapeHtml(
+                                            a.noanggota
+                                        )}
+
+                                    </td>
+
+
+                                    <td class="nama-cell">
+
+                                        ${escapeHtml(
+                                            a.nama
+                                        )}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        ${formatNumber(
+                                            a.minggu1
+                                        )}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        ${formatNumber(
+                                            a.minggu2
+                                        )}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        ${formatNumber(
+                                            a.minggu3
+                                        )}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        ${formatNumber(
+                                            a.minggu45
+                                        )}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <strong>
+
+                                            ${formatNumber(
+                                                a.jumlah
+                                            )}
+
+                                        </strong>
+
+                                    </td>
+
+                                </tr>
+
+                            `
+                        )
+                        .join("")}
+
+
+                    <tr class="jam-total-row">
+
+                        <td
+                            colspan="4"
+                        >
+
+                            JUMLAH KESELURUHAN
+
+                        </td>
+
+
+                        <td>
+
+                            <strong>
+
+                                ${formatNumber(
+                                    totalMinggu1
+                                )}
+
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+
+                            <strong>
+
+                                ${formatNumber(
+                                    totalMinggu2
+                                )}
+
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+
+                            <strong>
+
+                                ${formatNumber(
+                                    totalMinggu3
+                                )}
+
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+
+                            <strong>
+
+                                ${formatNumber(
+                                    totalMinggu45
+                                )}
+
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+
+                            <strong>
+
+                                ${formatNumber(
+                                    totalKeseluruhan
+                                )}
+
+                            </strong>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <div class="jam-grand-total">
+
+            <span>
+                📊 JUMLAH JAM KLM KESELURUHAN
+            </span>
+
+            <strong>
+
+                ${formatNumber(
+                    totalKeseluruhan
+                )} JAM
+
+            </strong>
+
+        </div>
+
+    `;
+
+}
+
+// =====================================================
+// NUMBER
+// =====================================================
+
+function num(
+    value
+) {
+
+    const n =
+        Number(
+            value
+        );
+
+
+    return Number.isFinite(
+        n
+    )
+        ? n
+        : 0;
+
+}
+
+
+// =====================================================
+// FORMAT NUMBER
+// =====================================================
+
+function formatNumber(
+    value
+) {
+
+    return num(
+        value
+    )
+        .toLocaleString(
+            "ms-MY",
+            {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            }
+        );
+
+}
+
+// =====================================================
 // STATUS
 // =====================================================
 
@@ -1681,7 +2539,27 @@ function paparStatus(
 
 }
 
+// =====================================================
+// TUTUP MODAL JAM KLM
+// =====================================================
 
+function tutupModalJamKLM() {
+
+    const modal =
+        document.getElementById(
+            "modalJamKLM"
+        );
+
+
+    if (modal) {
+
+        modal.classList.add(
+            "hidden"
+        );
+
+    }
+
+}
 // =====================================================
 // LOADING
 // =====================================================
