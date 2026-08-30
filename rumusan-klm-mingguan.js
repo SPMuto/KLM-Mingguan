@@ -761,17 +761,157 @@ async function muatRumusan() {
         }
 
 
-        dataRumusan =
-            data || [];
+dataRumusan =
+    data || [];
 
 
-        console.log(
-            "✅ DATA RUMUSAN:",
-            dataRumusan.length
+/*
+ * ==========================================
+ * AMBIL GAJI POKOK DARIPADA Data_Anggota
+ * ==========================================
+ */
+
+const noAnggotaList =
+    [
+        ...new Set(
+            dataRumusan
+                .map(
+                    row =>
+                        String(
+                            row.noanggota || ""
+                        ).trim()
+                )
+                .filter(Boolean)
+        )
+    ];
+
+
+console.log(
+    "NO ANGGOTA UNTUK SEMAK GAJI:",
+    noAnggotaList
+);
+
+
+if (noAnggotaList.length) {
+
+    const {
+        data: dataAnggota,
+        error: anggotaError
+    } =
+    await db
+        .from("Data_Anggota")
+        .select(`
+            noanggota,
+            gaji_pokok
+        `)
+        .in(
+            "noanggota",
+            noAnggotaList
         );
 
 
-        paparRumusan();
+    if (anggotaError) {
+
+        throw anggotaError;
+
+    }
+
+
+    console.log(
+        "DATA GAJI DARIPADA Data_Anggota:",
+        dataAnggota
+    );
+
+
+    /*
+     * ======================================
+     * BINA MAP:
+     *
+     * noanggota
+     *     →
+     * gaji_pokok
+     * ======================================
+     */
+
+    const mapGaji = {};
+
+
+    (dataAnggota || [])
+        .forEach(
+            anggota => {
+
+                const noAnggota =
+                    String(
+                        anggota.noanggota || ""
+                    ).trim();
+
+
+                mapGaji[
+                    noAnggota
+                ] =
+                    anggota.gaji_pokok;
+
+            }
+        );
+
+
+    console.log(
+        "MAP GAJI:",
+        mapGaji
+    );
+
+
+    /*
+     * ======================================
+     * MASUKKAN GAJI KE DATA RUMUSAN
+     * ======================================
+     */
+
+    dataRumusan =
+        dataRumusan.map(
+            row => {
+
+                const noAnggota =
+                    String(
+                        row.noanggota || ""
+                    ).trim();
+
+
+                return {
+
+                    ...row,
+
+                    gaji_pokok:
+                        mapGaji[
+                            noAnggota
+                        ] ?? 0
+
+                };
+
+            }
+        );
+
+}
+
+
+console.log(
+    "================================="
+);
+
+console.log(
+    "✅ DATA RUMUSAN SELEPAS MASUK GAJI"
+);
+
+console.table(
+    dataRumusan
+);
+
+console.log(
+    "================================="
+);
+
+
+paparRumusan();
 
 
         if (dataRumusan.length) {
@@ -1879,8 +2019,50 @@ function csvEscape(
 
 function num(value) {
 
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+
+        return 0;
+
+    }
+
+
+    /*
+     * Jika sudah nombor
+     */
+
+    if (
+        typeof value === "number"
+    ) {
+
+        return Number.isFinite(value)
+            ? value
+            : 0;
+
+    }
+
+
+    /*
+     * Buang:
+     * RM
+     * koma
+     * ruang
+     * dan aksara lain
+     */
+
+    let text =
+        String(value)
+            .trim()
+            .replace(/RM/gi, "")
+            .replace(/\s/g, "")
+            .replace(/,/g, "");
+
+
     const n =
-        Number(value);
+        Number(text);
 
 
     return Number.isFinite(n)
@@ -1888,7 +2070,6 @@ function num(value) {
         : 0;
 
 }
-
 
 // =====================================================
 // FORMAT NUMBER
