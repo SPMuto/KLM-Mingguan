@@ -250,18 +250,23 @@ function pasangEvent() {
 
     if (btnKira) {
 
-        btnKira.addEventListener(
-            "click",
-            () => {
+btnKira.addEventListener(
+    "click",
+    async () => {
 
-                console.log(
-                    "🧮 BUTANG KIRA RM DITEKAN"
-                );
-
-                kiraSemuaRM();
-
-            }
+        console.log(
+            "🧮 BUTANG KIRA RM DITEKAN"
         );
+
+        // KIRA RM MINGGU SEMASA
+        kiraSemuaRM();
+
+        // PAPAR KESELURUHAN
+        // MINGGU 1 + 2 + 3 + 4/5
+        await paparKeseluruhanRM();
+
+    }
+);
 
     }
 
@@ -2333,4 +2338,873 @@ console.log(
 
 console.log(
     "================================="
+);
+
+
+// =====================================================
+// POPUP KESELURUHAN RM
+// MINGGU 1 + MINGGU 2 + MINGGU 3 + MINGGU 4/5
+// =====================================================
+
+async function paparKeseluruhanRM() {
+
+    console.log(
+        "================================="
+    );
+
+    console.log(
+        "💰 KIRA KESELURUHAN RM"
+    );
+
+    console.log(
+        "================================="
+    );
+
+
+    if (!profilKetuaUnit) {
+
+        paparStatus(
+            "❌ Profil Ketua Unit tidak dijumpai.",
+            true
+        );
+
+        return;
+
+    }
+
+
+    const bulan =
+        Number(
+            document.getElementById(
+                "bulan"
+            ).value
+        );
+
+
+    const tahun =
+        Number(
+            document.getElementById(
+                "tahun"
+            ).value
+        );
+
+
+    const unit =
+        (profilKetuaUnit.unit || "")
+            .trim();
+
+
+    const mingguList = [
+
+        "MINGGU 1",
+
+        "MINGGU 2",
+
+        "MINGGU 3",
+
+        "MINGGU 4/5"
+
+    ];
+
+
+    const popup =
+        document.getElementById(
+            "popupKeseluruhanRM"
+        );
+
+
+    if (!popup) {
+
+        console.error(
+            "Popup keseluruhan RM tidak dijumpai."
+        );
+
+        return;
+
+    }
+
+
+    // =================================================
+    // LOADING
+    // =================================================
+
+    const body =
+        document.getElementById(
+            "rmPopupBody"
+        );
+
+
+    if (body) {
+
+        body.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="10"
+                    style="padding:30px;"
+                >
+
+                    ⏳ Mengira keseluruhan RM...
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+
+    popup.classList.remove(
+        "hidden"
+    );
+
+
+    setText(
+        "rmPopupInfo",
+        `${unit} • ${bulan}/${tahun}`
+    );
+
+
+    try {
+
+        // =================================================
+        // AMBIL SEMUA DATA 4 MINGGU
+        // =================================================
+
+        const {
+            data,
+            error
+        } =
+        await db
+            .from("KLM_Mingguan")
+            .select("*")
+            .eq("bulan", bulan)
+            .eq("tahun", tahun)
+            .eq("unit", unit)
+            .in(
+                "minggu",
+                mingguList
+            );
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        const semuaData =
+            data || [];
+
+
+        console.log(
+            "DATA SEMUA MINGGU:",
+            semuaData
+        );
+
+
+        // =================================================
+        // KIRA DATA RM
+        // =================================================
+
+        const keputusan =
+            kiraRMKeseluruhan(
+                semuaData,
+                mingguList
+            );
+
+
+        // =================================================
+        // PAPAR SUMMARY
+        // =================================================
+
+        paparSummaryRM(
+            keputusan.jumlahMinggu
+        );
+
+
+        // =================================================
+        // PAPAR TABLE
+        // =================================================
+
+        paparTableKeseluruhanRM(
+            keputusan.anggota
+        );
+
+
+        // =================================================
+        // JUMLAH BESAR
+        // =================================================
+
+        setText(
+            "rmJumlahKeseluruhan",
+            formatRM(
+                keputusan.jumlahKeseluruhan
+            )
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "RALAT KESELURUHAN RM:",
+            error
+        );
+
+
+        if (body) {
+
+            body.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="10"
+                        style="
+                            padding:30px;
+                            color:#b91c1c;
+                        "
+                    >
+
+                        ❌ Gagal mengira RM:
+                        ${escapeHtml(
+                            error.message
+                        )}
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+
+    }
+
+}
+
+
+// =====================================================
+// KIRA RM KESELURUHAN
+// =====================================================
+
+function kiraRMKeseluruhan(
+    semuaData,
+    mingguList
+) {
+
+    const anggotaMap =
+        new Map();
+
+
+    const jumlahMinggu = {
+
+        "MINGGU 1": 0,
+
+        "MINGGU 2": 0,
+
+        "MINGGU 3": 0,
+
+        "MINGGU 4/5": 0
+
+    };
+
+
+    // =================================================
+    // LOOP DATA KLM
+    // =================================================
+
+    semuaData.forEach(
+        klm => {
+
+            const a =
+                anggota.find(
+                    item =>
+                        String(
+                            item.noskb
+                        ) ===
+                        String(
+                            klm.noskb
+                        )
+                );
+
+
+            if (!a) {
+
+                return;
+
+            }
+
+
+            const rm =
+                kiraRMUntukAnggota(
+                    a,
+                    klm
+                );
+
+
+            const minggu =
+                klm.minggu;
+
+
+            if (!jumlahMinggu.hasOwnProperty(
+                minggu
+            )) {
+
+                return;
+
+            }
+
+
+            jumlahMinggu[minggu] +=
+                rm.jumlah;
+
+
+            // =================================================
+            // MAP ANGGOTA
+            // =================================================
+
+            if (
+                !anggotaMap.has(
+                    String(a.noskb)
+                )
+            ) {
+
+                anggotaMap.set(
+                    String(a.noskb),
+                    {
+
+                        noskb:
+                            a.noskb,
+
+                        noanggota:
+                            a.noanggota,
+
+                        nama:
+                            a.nama,
+
+                        minggu: {
+
+                            "MINGGU 1": 0,
+
+                            "MINGGU 2": 0,
+
+                            "MINGGU 3": 0,
+
+                            "MINGGU 4/5": 0
+
+                        },
+
+                        jumlah:
+                            0
+
+                    }
+                );
+
+            }
+
+
+            const rekod =
+                anggotaMap.get(
+                    String(a.noskb)
+                );
+
+
+            rekod.minggu[minggu] +=
+                rm.jumlah;
+
+
+            rekod.jumlah +=
+                rm.jumlah;
+
+        }
+    );
+
+
+    const jumlahKeseluruhan =
+        Object.values(
+            jumlahMinggu
+        )
+        .reduce(
+            (
+                total,
+                nilai
+            ) =>
+                total + nilai,
+            0
+        );
+
+
+    return {
+
+        anggota:
+            Array.from(
+                anggotaMap.values()
+            ),
+
+        jumlahMinggu,
+
+        jumlahKeseluruhan
+
+    };
+
+}
+
+
+// =====================================================
+// KIRA RM UNTUK SEORANG ANGGOTA
+// =====================================================
+
+function kiraRMUntukAnggota(
+    a,
+    klm
+) {
+
+    const kadarBiasa =
+        Number(
+            a.rm_pehariklmbiasa || 0
+        );
+
+
+    const kadarOffHari =
+        Number(
+            a.rm_perharioffday || 0
+        );
+
+
+    const kadarOffJam =
+        Number(
+            a.rm_perjamoffday || 0
+        );
+
+
+    const kadarCutiHari =
+        Number(
+            a.rm_perharicutiam || 0
+        );
+
+
+    const kadarCutiJam =
+        Number(
+            a.rm_perjamcutiam || 0
+        );
+
+
+    const hariBiasa =
+        Number(
+            klm.hari_biasa_jam || 0
+        );
+
+
+    const offKurang4 =
+        Number(
+            klm.off_kurang_4 || 0
+        );
+
+
+    const offKurang8 =
+        Number(
+            klm.off_kurang_8 || 0
+        );
+
+
+    const offLebih8 =
+        Number(
+            klm.off_lebih_8 || 0
+        );
+
+
+    const cutiKurang8 =
+        Number(
+            klm.cuti_kurang_8 || 0
+        );
+
+
+    const cutiLebih8 =
+        Number(
+            klm.cuti_lebih_8 || 0
+        );
+
+
+    // =================================================
+    // FORMULA SAMA DENGAN KIRA RM BIASA
+    // =================================================
+
+    const rmHariBiasa =
+        hariBiasa *
+        kadarBiasa;
+
+
+    // OFF < 4 JAM DIABAIKAN
+
+    const rmOffKurang4 =
+        0;
+
+
+    const rmOffKurang8 =
+        offKurang8 *
+        kadarOffHari;
+
+
+    const rmOffLebih8 =
+        offLebih8 *
+        kadarOffJam;
+
+
+    const rmCutiKurang8 =
+        cutiKurang8 *
+        kadarCutiHari;
+
+
+    const rmCutiLebih8 =
+        cutiLebih8 *
+        kadarCutiJam;
+
+
+    const jumlah =
+        rmHariBiasa +
+        rmOffKurang4 +
+        rmOffKurang8 +
+        rmOffLebih8 +
+        rmCutiKurang8 +
+        rmCutiLebih8;
+
+
+    return {
+
+        hariBiasa:
+            rmHariBiasa,
+
+        offKurang4:
+            rmOffKurang4,
+
+        offKurang8:
+            rmOffKurang8,
+
+        offLebih8:
+            rmOffLebih8,
+
+        cutiKurang8:
+            rmCutiKurang8,
+
+        cutiLebih8:
+            rmCutiLebih8,
+
+        jumlah
+
+    };
+
+}
+
+
+// =====================================================
+// PAPAR SUMMARY MINGGU
+// =====================================================
+
+function paparSummaryRM(
+    jumlahMinggu
+) {
+
+    const container =
+        document.getElementById(
+            "rmMingguanSummary"
+        );
+
+
+    if (!container) return;
+
+
+    container.innerHTML = `
+
+        ${binaKadMinggu(
+            "MINGGU 1",
+            jumlahMinggu["MINGGU 1"]
+        )}
+
+        ${binaKadMinggu(
+            "MINGGU 2",
+            jumlahMinggu["MINGGU 2"]
+        )}
+
+        ${binaKadMinggu(
+            "MINGGU 3",
+            jumlahMinggu["MINGGU 3"]
+        )}
+
+        ${binaKadMinggu(
+            "MINGGU 4/5",
+            jumlahMinggu["MINGGU 4/5"]
+        )}
+
+    `;
+
+}
+
+
+// =====================================================
+// KAD MINGGU
+// =====================================================
+
+function binaKadMinggu(
+    nama,
+    jumlah
+) {
+
+    return `
+
+        <div class="rm-week-card">
+
+            <span>
+                ${nama}
+            </span>
+
+            <strong>
+                ${formatRM(jumlah)}
+            </strong>
+
+        </div>
+
+    `;
+
+}
+
+
+// =====================================================
+// TABLE KESELURUHAN
+// =====================================================
+
+function paparTableKeseluruhanRM(
+    senarai
+) {
+
+    const body =
+        document.getElementById(
+            "rmPopupBody"
+        );
+
+
+    if (!body) return;
+
+
+    body.innerHTML = "";
+
+
+    if (!senarai.length) {
+
+        body.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="10"
+                    style="padding:30px;"
+                >
+
+                    Tiada data RM
+                    untuk bulan ini.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    senarai.sort(
+        (a, b) =>
+            String(a.nama)
+                .localeCompare(
+                    String(b.nama)
+                )
+    );
+
+
+    senarai.forEach(
+        (a, index) => {
+
+            const tr =
+                document.createElement(
+                    "tr"
+                );
+
+
+            tr.innerHTML = `
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        a.noskb
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        a.noanggota
+                    )}
+                </td>
+
+                <td class="nama-rm">
+                    ${escapeHtml(
+                        a.nama
+                    )}
+                </td>
+
+                <td>
+                    ${formatRM(
+                        a.minggu[
+                            "MINGGU 1"
+                        ]
+                    )}
+                </td>
+
+                <td>
+                    ${formatRM(
+                        a.minggu[
+                            "MINGGU 2"
+                        ]
+                    )}
+                </td>
+
+                <td>
+                    ${formatRM(
+                        a.minggu[
+                            "MINGGU 3"
+                        ]
+                    )}
+                </td>
+
+                <td>
+                    ${formatRM(
+                        a.minggu[
+                            "MINGGU 4/5"
+                        ]
+                    )}
+                </td>
+
+                <td>
+                    ${formatRM(
+                        a.jumlah
+                    )}
+                </td>
+
+            `;
+
+
+            body.appendChild(
+                tr
+            );
+
+        }
+    );
+
+}
+
+
+// =====================================================
+// FORMAT RM
+// =====================================================
+
+function formatRM(
+    value
+) {
+
+    return (
+        "RM " +
+        Number(
+            value || 0
+        ).toFixed(2)
+    );
+
+}
+
+
+// =====================================================
+// TUTUP POPUP
+// =====================================================
+
+function tutupPopupRM() {
+
+    const popup =
+        document.getElementById(
+            "popupKeseluruhanRM"
+        );
+
+
+    if (popup) {
+
+        popup.classList.add(
+            "hidden"
+        );
+
+    }
+
+}
+
+
+// =====================================================
+// EVENT POPUP
+// =====================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const btnTutup =
+            document.getElementById(
+                "btnTutupRM"
+            );
+
+
+        const btnTutup2 =
+            document.getElementById(
+                "btnTutupRM2"
+            );
+
+
+        const overlay =
+            document.querySelector(
+                ".rm-popup-overlay"
+            );
+
+
+        if (btnTutup) {
+
+            btnTutup.addEventListener(
+                "click",
+                tutupPopupRM
+            );
+
+        }
+
+
+        if (btnTutup2) {
+
+            btnTutup2.addEventListener(
+                "click",
+                tutupPopupRM
+            );
+
+        }
+
+
+        if (overlay) {
+
+            overlay.addEventListener(
+                "click",
+                tutupPopupRM
+            );
+
+        }
+
+    }
 );
