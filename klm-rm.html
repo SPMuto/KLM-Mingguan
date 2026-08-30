@@ -574,6 +574,148 @@
 
 </div>
 
+<!-- =====================================================
+     POPUP KESELURUHAN RM
+===================================================== -->
+
+<div id="popupKeseluruhanRM" class="popup-overlay hidden">
+
+    <div class="popup-rm">
+
+        <div class="popup-rm-header">
+
+            <div>
+                <div class="popup-rm-title">
+                    💰 KESELURUHAN RM KLM
+                </div>
+
+                <div class="popup-rm-subtitle">
+                    Jumlah RM Minggu 1 + Minggu 2 + Minggu 3 + Minggu 4/5
+                </div>
+            </div>
+
+            <button
+                id="btnTutupPopupRM"
+                class="popup-close"
+            >
+                ✕
+            </button>
+
+        </div>
+
+
+        <div class="popup-rm-info">
+
+            <div>
+                <span>BULAN</span>
+                <strong id="popupBulanRM">-</strong>
+            </div>
+
+            <div>
+                <span>TAHUN</span>
+                <strong id="popupTahunRM">-</strong>
+            </div>
+
+            <div>
+                <span>UNIT</span>
+                <strong id="popupUnitRM">-</strong>
+            </div>
+
+        </div>
+
+
+        <div class="popup-week-grid">
+
+            <div class="popup-week-card">
+                <span>MINGGU 1</span>
+                <strong id="popupMinggu1RM">
+                    RM 0.00
+                </strong>
+            </div>
+
+
+            <div class="popup-week-card">
+                <span>MINGGU 2</span>
+                <strong id="popupMinggu2RM">
+                    RM 0.00
+                </strong>
+            </div>
+
+
+            <div class="popup-week-card">
+                <span>MINGGU 3</span>
+                <strong id="popupMinggu3RM">
+                    RM 0.00
+                </strong>
+            </div>
+
+
+            <div class="popup-week-card">
+                <span>MINGGU 4/5</span>
+                <strong id="popupMinggu45RM">
+                    RM 0.00
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="popup-grand-total">
+
+            <span>
+                JUMLAH RM KESELURUHAN
+            </span>
+
+            <strong id="popupJumlahKeseluruhanRM">
+                RM 0.00
+            </strong>
+
+        </div>
+
+
+        <div class="popup-loading hidden" id="popupLoadingRM">
+
+            <div class="spinner"></div>
+
+            <span>
+                Mengira keseluruhan RM...
+            </span>
+
+        </div>
+
+
+        <div class="popup-detail">
+
+            <div class="popup-detail-title">
+                📊 Ringkasan Setiap Anggota
+            </div>
+
+            <div
+                id="popupSenaraiAnggotaRM"
+                class="popup-table-wrapper"
+            ></div>
+
+        </div>
+
+
+        <div class="popup-rm-footer">
+
+            <button
+                id="btnTutupPopupRM2"
+                class="btn-popup-tutup"
+            >
+                TUTUP
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+    
+
+
+    
 <script src="klm-rm.js?v=20260826-01"></script>
 
 </body>
