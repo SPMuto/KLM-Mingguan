@@ -426,7 +426,153 @@
     </main>
 
 </div>
+<!-- =====================================================
+     POPUP KESELURUHAN RM
+===================================================== -->
 
+<div
+    id="popupKeseluruhanRM"
+    class="rm-popup hidden"
+>
+
+    <div class="rm-popup-overlay"></div>
+
+    <div class="rm-popup-box">
+
+        <div class="rm-popup-header">
+
+            <div>
+                <span class="rm-popup-icon">💰</span>
+
+                <div>
+                    <h2>KESELURUHAN RM KLM</h2>
+
+                    <p id="rmPopupInfo">
+                        -
+                    </p>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                id="btnTutupRM"
+                class="rm-popup-close"
+            >
+                ✕
+            </button>
+
+        </div>
+
+
+        <!-- RINGKASAN MINGGU -->
+
+        <div
+            id="rmMingguanSummary"
+            class="rm-week-summary"
+        ></div>
+
+
+        <!-- JUMLAH BESAR -->
+
+        <div class="rm-grand-total">
+
+            <div>
+                <span>JUMLAH KESELURUHAN RM</span>
+
+                <strong id="rmJumlahKeseluruhan">
+                    RM 0.00
+                </strong>
+            </div>
+
+        </div>
+
+
+        <!-- JADUAL KESELURUHAN -->
+
+        <div class="rm-popup-table-wrapper">
+
+            <table class="rm-popup-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th rowspan="2">
+                            BIL
+                        </th>
+
+                        <th rowspan="2">
+                            NO SKB
+                        </th>
+
+                        <th rowspan="2">
+                            NO ANGGOTA
+                        </th>
+
+                        <th rowspan="2">
+                            NAMA
+                        </th>
+
+                        <th colspan="5">
+                            RM MINGGUAN
+                        </th>
+
+                        <th rowspan="2">
+                            JUMLAH RM
+                        </th>
+
+                    </tr>
+
+                    <tr>
+
+                        <th>
+                            M1
+                        </th>
+
+                        <th>
+                            M2
+                        </th>
+
+                        <th>
+                            M3
+                        </th>
+
+                        <th>
+                            M4/5
+                        </th>
+
+                        <th>
+                            -
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="rmPopupBody"></tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- FOOTER -->
+
+        <div class="rm-popup-footer">
+
+            <button
+                type="button"
+                id="btnTutupRM2"
+                class="btn-popup-close"
+            >
+                TUTUP
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 <script src="klm-rm.js?v=20260826-01"></script>
 
